@@ -78,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(mainActivity);
                     Log.d(TAG, "onComplete: " + user.getEmail());
                 } else {
-                    Log.d(TAG, "signInWithCredential: failure", task.getException());
+                    Log.d(TAG, "signInWit   hCredential: failure", task.getException());
 
                     //TODO: CREATE LOGIN FAILED DIALOG
                 }
