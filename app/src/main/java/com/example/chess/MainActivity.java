@@ -19,20 +19,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        // Make the background black
-        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
-
-        // Create the chessboard layout
+        // Variables
         chessboard = findViewById(R.id.chessboard);
 
-        // Set the dimensions of the chessboard to be square
+        // Initialize
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
         setChessboardDimensions();
-
-        // Create and add the squares to the chessboard
         createSquares();
     }
 
+    // Methods
     private void setChessboardDimensions() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -45,16 +41,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createSquares() {
-        boolean isWhite = true; // Flag to alternate the square color
+        boolean isWhite = true;
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 ImageView square = new ImageView(this);
 
                 if (isWhite) {
-                    square.setBackgroundColor(Color.BLUE);
+                    square.setBackgroundColor(Color.parseColor("#6ac3bd"));
                 } else {
-                    square.setBackgroundColor(Color.GREEN);
+                    square.setBackgroundColor(Color.TRANSPARENT);
                 }
 
                 GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
@@ -66,9 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
                 chessboard.addView(square);
 
-                isWhite = !isWhite; // Toggle the flag
+                isWhite = !isWhite;
             }
-            isWhite = !isWhite; // Toggle the flag at the end of each row
+            isWhite = !isWhite;
         }
     }
 }
