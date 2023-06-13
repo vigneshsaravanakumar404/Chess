@@ -35,6 +35,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
+        //! Skip authentication for now
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
         // Google Authentication
         signIn = findViewById(R.id.signIn);
         mAuth = FirebaseAuth.getInstance();
