@@ -1,6 +1,7 @@
 package com.example.chess;
 
 import android.graphics.Color;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
@@ -8,11 +9,13 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity {
 
     // Variables
     GridLayout chessboard;
+    ConstraintLayout mainLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,11 +24,16 @@ public class MainActivity extends AppCompatActivity {
 
         // Variables
         chessboard = findViewById(R.id.chessboard);
+        mainLayout = findViewById(R.id.mainLayout);
 
         // Initialize
-        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable.setExitFadeDuration(2000);
+        //animationDrawable.start();
         setChessboardDimensions();
         createSquares();
+
     }
 
     // Methods
