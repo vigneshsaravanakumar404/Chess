@@ -1,18 +1,19 @@
 package com.example.chess;
 
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,14 +32,17 @@ public class MainActivity extends AppCompatActivity {
         mainLayout = findViewById(R.id.mainLayout);
 
         // background
-        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
-        animationDrawable.setEnterFadeDuration(2000);
-        animationDrawable.setExitFadeDuration(2000);
-        //animationDrawable.start();
+//        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
+//        animationDrawable.setEnterFadeDuration(5000);
+//        animationDrawable.setExitFadeDuration(5000);
+//        animationDrawable.start();
 
         // Initialize
         setChessboardDimensions();
         createSquares();
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
 
         // Place pieces on the board
         ImageView blackRook = createChessPiece(R.drawable.br, 0, 0);
@@ -108,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
         chessboard.addView(whitePawn6);
         chessboard.addView(whitePawn7);
         chessboard.addView(whitePawn8);
+
+        // update the position of the pawn on e2 to e4
+        updatePosition(whitePawn5, 4, 4);
+
 
     }
 
@@ -188,11 +196,30 @@ public class MainActivity extends AppCompatActivity {
         return piece;
     }
 
+    // Create a method to update the position of a piece on the board
+    private void updatePosition(ImageView piece, int x, int y) {
+        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+        layoutParams.width = 0;
+        layoutParams.height = 0;
+        layoutParams.rowSpec = GridLayout.spec(x, 1);
+        layoutParams.columnSpec = GridLayout.spec(y, 1);
+        layoutParams.setGravity(Gravity.FILL);
+        piece.setLayoutParams(layoutParams);
+    }
+
 }
 //! TODO IN COMPUTER SCREEN
 // TODO: class for each square or piece
-// TODO: game logic
-// TODO: AI
+// TODO: update moves based on clicks
+// TODO: only allowed to make legal moves
+// TODO: only allowed to make moves during your turn
+// TODO: time
+// TODO: check checkmate
+// TODO: check stalemate
+// TODO: check draw
+// TODO: AI responses
+// TODO: Update statistics
+// TODO: Update game history
 
 //! TODO IN SPLASH SCREEN
 //! TODO IN LOGIC SCREEN
