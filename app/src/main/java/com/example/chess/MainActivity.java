@@ -17,6 +17,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 public class MainActivity extends AppCompatActivity {
 
     // Variables
+    public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     GridLayout chessboard;
     ConstraintLayout mainLayout;
 
@@ -188,3 +189,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+//! TODO IN COMPUTER SCREEN
+// TODO: class for each square or piece
+// TODO: game logic
+// TODO: AI
+
+//! TODO IN SPLASH SCREEN
+//! TODO IN LOGIC SCREEN
+//! TODO IN HOME SCREEN
+//! TODO IN MULTIPLAYER SCREEN
