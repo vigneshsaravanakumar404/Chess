@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +23,9 @@ public class MainActivity extends AppCompatActivity {
     public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     GridLayout chessboard;
     ConstraintLayout mainLayout;
+    ArrayList<ChessPiece> blackPieces = new ArrayList<>();
+    ArrayList<ChessPiece> whitePieces = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,11 +36,6 @@ public class MainActivity extends AppCompatActivity {
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
 
-        // background
-//        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
-//        animationDrawable.setEnterFadeDuration(5000);
-//        animationDrawable.setExitFadeDuration(5000);
-//        animationDrawable.start();
 
         // Initialize
         setChessboardDimensions();
@@ -44,77 +44,76 @@ public class MainActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
 
-        // Place pieces on the board
-        ImageView blackRook = createChessPiece(R.drawable.br, 0, 0);
-        ImageView blackRook2 = createChessPiece(R.drawable.br, 0, 7);
-        ImageView blackKnight = createChessPiece(R.drawable.bn, 0, 1);
-        ImageView blackKnight2 = createChessPiece(R.drawable.bn, 0, 6);
-        ImageView blackBishop = createChessPiece(R.drawable.bb, 0, 2);
-        ImageView blackBishop2 = createChessPiece(R.drawable.bb, 0, 5);
-        ImageView blackQueen = createChessPiece(R.drawable.bq, 0, 3);
-        ImageView blackKing = createChessPiece(R.drawable.bk, 0, 4);
-        ImageView blackPawn1 = createChessPiece(R.drawable.bp, 1, 0);
-        ImageView blackPawn2 = createChessPiece(R.drawable.bp, 1, 1);
-        ImageView blackPawn3 = createChessPiece(R.drawable.bp, 1, 2);
-        ImageView blackPawn4 = createChessPiece(R.drawable.bp, 1, 3);
-        ImageView blackPawn5 = createChessPiece(R.drawable.bp, 1, 4);
-        ImageView blackPawn6 = createChessPiece(R.drawable.bp, 1, 5);
-        ImageView blackPawn7 = createChessPiece(R.drawable.bp, 1, 6);
-        ImageView blackPawn8 = createChessPiece(R.drawable.bp, 1, 7);
+        // Initialize and place pieces on the board
+        ChessPiece blackRook = new ChessPiece(0, 0, createChessPiece(R.drawable.br, 0, 0), "br");
+        ChessPiece blackRook2 = new ChessPiece(0, 7, createChessPiece(R.drawable.br, 0, 7), "br");
+        ChessPiece blackKnight = new ChessPiece(0, 1, createChessPiece(R.drawable.bn, 0, 1), "bn");
+        ChessPiece blackKnight2 = new ChessPiece(0, 6, createChessPiece(R.drawable.bn, 0, 6), "bn");
+        ChessPiece blackBishop = new ChessPiece(0, 2, createChessPiece(R.drawable.bb, 0, 2), "bb");
+        ChessPiece blackBishop2 = new ChessPiece(0, 5, createChessPiece(R.drawable.bb, 0, 5), "bb");
+        ChessPiece blackQueen = new ChessPiece(0, 3, createChessPiece(R.drawable.bq, 0, 3), "bq");
+        ChessPiece blackKing = new ChessPiece(0, 4, createChessPiece(R.drawable.bk, 0, 4), "bk");
+        ChessPiece blackPawn1 = new ChessPiece(1, 0, createChessPiece(R.drawable.bp, 1, 0), "bp");
+        ChessPiece blackPawn2 = new ChessPiece(1, 1, createChessPiece(R.drawable.bp, 1, 1), "bp");
+        ChessPiece blackPawn3 = new ChessPiece(1, 2, createChessPiece(R.drawable.bp, 1, 2), "bp");
+        ChessPiece blackPawn4 = new ChessPiece(1, 3, createChessPiece(R.drawable.bp, 1, 3), "bp");
+        ChessPiece blackPawn5 = new ChessPiece(1, 4, createChessPiece(R.drawable.bp, 1, 4), "bp");
+        ChessPiece blackPawn6 = new ChessPiece(1, 5, createChessPiece(R.drawable.bp, 1, 5), "bp");
+        ChessPiece blackPawn7 = new ChessPiece(1, 6, createChessPiece(R.drawable.bp, 1, 6), "bp");
+        ChessPiece blackPawn8 = new ChessPiece(1, 7, createChessPiece(R.drawable.bp, 1, 7), "bp");
 
-        ImageView whiteRook = createChessPiece(R.drawable.wr, 7, 0);
-        ImageView whiteRook2 = createChessPiece(R.drawable.wr, 7, 7);
-        ImageView whiteKnight = createChessPiece(R.drawable.wn, 7, 1);
-        ImageView whiteKnight2 = createChessPiece(R.drawable.wn, 7, 6);
-        ImageView whiteBishop = createChessPiece(R.drawable.wb, 7, 2);
-        ImageView whiteBishop2 = createChessPiece(R.drawable.wb, 7, 5);
-        ImageView whiteQueen = createChessPiece(R.drawable.wq, 7, 3);
-        ImageView whiteKing = createChessPiece(R.drawable.wk, 7, 4);
-        ImageView whitePawn1 = createChessPiece(R.drawable.wp, 6, 0);
-        ImageView whitePawn2 = createChessPiece(R.drawable.wp, 6, 1);
-        ImageView whitePawn3 = createChessPiece(R.drawable.wp, 6, 2);
-        ImageView whitePawn4 = createChessPiece(R.drawable.wp, 6, 3);
-        ImageView whitePawn5 = createChessPiece(R.drawable.wp, 6, 4);
-        ImageView whitePawn6 = createChessPiece(R.drawable.wp, 6, 5);
-        ImageView whitePawn7 = createChessPiece(R.drawable.wp, 6, 6);
-        ImageView whitePawn8 = createChessPiece(R.drawable.wp, 6, 7);
+        ChessPiece whiteRook = new ChessPiece(7, 0, createChessPiece(R.drawable.wr, 7, 0), "wr");
+        ChessPiece whiteRook2 = new ChessPiece(7, 7, createChessPiece(R.drawable.wr, 7, 7), "wr");
+        ChessPiece whiteKnight = new ChessPiece(7, 1, createChessPiece(R.drawable.wn, 7, 1), "wn");
+        ChessPiece whiteKnight2 = new ChessPiece(7, 6, createChessPiece(R.drawable.wn, 7, 6), "wn");
+        ChessPiece whiteBishop = new ChessPiece(7, 2, createChessPiece(R.drawable.wb, 7, 2), "wb");
+        ChessPiece whiteBishop2 = new ChessPiece(7, 5, createChessPiece(R.drawable.wb, 7, 5), "wb");
+        ChessPiece whiteQueen = new ChessPiece(7, 3, createChessPiece(R.drawable.wq, 7, 3), "wq");
+        ChessPiece whiteKing = new ChessPiece(7, 4, createChessPiece(R.drawable.wk, 7, 4), "wk");
+        ChessPiece whitePawn1 = new ChessPiece(6, 0, createChessPiece(R.drawable.wp, 6, 0), "wp");
+        ChessPiece whitePawn2 = new ChessPiece(6, 1, createChessPiece(R.drawable.wp, 6, 1), "wp");
+        ChessPiece whitePawn3 = new ChessPiece(6, 2, createChessPiece(R.drawable.wp, 6, 2), "wp");
+        ChessPiece whitePawn4 = new ChessPiece(6, 3, createChessPiece(R.drawable.wp, 6, 3), "wp");
+        ChessPiece whitePawn5 = new ChessPiece(6, 4, createChessPiece(R.drawable.wp, 6, 4), "wp");
+        ChessPiece whitePawn6 = new ChessPiece(6, 5, createChessPiece(R.drawable.wp, 6, 5), "wp");
+        ChessPiece whitePawn7 = new ChessPiece(6, 6, createChessPiece(R.drawable.wp, 6, 6), "wp");
+        ChessPiece whitePawn8 = new ChessPiece(6, 7, createChessPiece(R.drawable.wp, 6, 7), "wp");
+        blackPieces.add(blackRook);
+        blackPieces.add(blackRook2);
+        blackPieces.add(blackKnight);
+        blackPieces.add(blackKnight2);
+        blackPieces.add(blackBishop);
+        blackPieces.add(blackBishop2);
+        blackPieces.add(blackQueen);
+        blackPieces.add(blackKing);
+        blackPieces.add(blackPawn1);
+        blackPieces.add(blackPawn2);
+        blackPieces.add(blackPawn3);
+        blackPieces.add(blackPawn4);
+        blackPieces.add(blackPawn5);
+        blackPieces.add(blackPawn6);
+        blackPieces.add(blackPawn7);
+        blackPieces.add(blackPawn8);
 
-        chessboard.addView(blackRook);
-        chessboard.addView(blackRook2);
-        chessboard.addView(blackKnight);
-        chessboard.addView(blackKnight2);
-        chessboard.addView(blackBishop);
-        chessboard.addView(blackBishop2);
-        chessboard.addView(blackQueen);
-        chessboard.addView(blackKing);
-        chessboard.addView(blackPawn1);
-        chessboard.addView(blackPawn2);
-        chessboard.addView(blackPawn3);
-        chessboard.addView(blackPawn4);
-        chessboard.addView(blackPawn5);
-        chessboard.addView(blackPawn6);
-        chessboard.addView(blackPawn7);
-        chessboard.addView(blackPawn8);
+        whitePieces.add(whiteRook);
+        whitePieces.add(whiteRook2);
+        whitePieces.add(whiteKnight);
+        whitePieces.add(whiteKnight2);
+        whitePieces.add(whiteBishop);
+        whitePieces.add(whiteBishop2);
+        whitePieces.add(whiteQueen);
+        whitePieces.add(whiteKing);
+        whitePieces.add(whitePawn1);
+        whitePieces.add(whitePawn2);
+        whitePieces.add(whitePawn3);
+        whitePieces.add(whitePawn4);
+        whitePieces.add(whitePawn5);
+        whitePieces.add(whitePawn6);
+        whitePieces.add(whitePawn7);
+        whitePieces.add(whitePawn8);
 
-        chessboard.addView(whiteRook);
-        chessboard.addView(whiteRook2);
-        chessboard.addView(whiteKnight);
-        chessboard.addView(whiteKnight2);
-        chessboard.addView(whiteBishop);
-        chessboard.addView(whiteBishop2);
-        chessboard.addView(whiteQueen);
-        chessboard.addView(whiteKing);
-        chessboard.addView(whitePawn1);
-        chessboard.addView(whitePawn2);
-        chessboard.addView(whitePawn3);
-        chessboard.addView(whitePawn4);
-        chessboard.addView(whitePawn5);
-        chessboard.addView(whitePawn6);
-        chessboard.addView(whitePawn7);
-        chessboard.addView(whitePawn8);
 
-        // update the position of the pawn on e2 to e4
-        updatePosition(whitePawn5, 4, 4);
+        // add a textview at the top
 
 
     }
@@ -207,7 +206,9 @@ public class MainActivity extends AppCompatActivity {
         piece.setLayoutParams(layoutParams);
     }
 
+
 }
+
 //! TODO IN COMPUTER SCREEN
 // TODO: class for each square or piece
 // TODO: update moves based on clicks
@@ -225,3 +226,10 @@ public class MainActivity extends AppCompatActivity {
 //! TODO IN LOGIC SCREEN
 //! TODO IN HOME SCREEN
 //! TODO IN MULTIPLAYER SCREEN
+
+
+// background
+//        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
+//        animationDrawable.setEnterFadeDuration(5000);
+//        animationDrawable.setExitFadeDuration(5000);
+//        animationDrawable.start();
