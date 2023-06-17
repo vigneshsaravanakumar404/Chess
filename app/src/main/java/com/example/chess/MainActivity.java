@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -20,14 +21,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.github.bhlangonijr.chesslib.Board;
+import com.github.bhlangonijr.chesslib.move.Move;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
 
     // Variables
-    public static boolean isBlack = false;
+    public static boolean isBlack = true;
     public static boolean isPlayerTurn;
-    public static String fen = "r2qk2r/pp1n1ppp/2pbpn2/3p1b2/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQkq - 0 1";
+    public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public static int level = 20;
     GridLayout chessboard;
     ConstraintLayout mainLayout;
     String currentSelection = "";
@@ -43,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
         board = new Board();
+
 //
         // Initialize
         setChessboardDimensions();
@@ -57,37 +68,83 @@ public class MainActivity extends AppCompatActivity {
         isPlayerTurn = !isBlack;
 
         // Set onClickListeners to each square
+        // Set onClickListeners to each square
+        // Set onClickListeners to each square
+        // Set onClickListeners to each square
         for (int i = 0; i < chessboard.getChildCount(); i++) {
             ImageView square = (ImageView) chessboard.getChildAt(i);
-            square.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Get the row and column of the clicked square
-                    int row = 0;
-                    int col = 0;
-                    for (int i = 0; i < chessboard.getChildCount(); i++) {
-                        if (chessboard.getChildAt(i) == v) {
-                            row = i / 8;
-                            col = i % 8;
+            square.setOnClickListener(v -> {
+                // Get the row and column of the clicked square
+                int row = 0;
+                int col = 0;
+                for (int i1 = 0; i1 < chessboard.getChildCount(); i1++) {
+                    if (chessboard.getChildAt(i1) == v) {
+                        row = i1 / 8;
+                        col = i1 % 8;
+                        break;
+                    }
+                }
+
+                // Get the piece on the clicked square
+                String piece = getPieceFromBoardPosition(row, col);
+
+                Log.d("LOG123", String.valueOf(piece.length()));
+                if (isBlack && !isPlayerTurn) {
+                    // Disable the OnClickListener for the chessboard squares
+                    for (int j = 0; j < chessboard.getChildCount(); j++) {
+                        ImageView rect = (ImageView) chessboard.getChildAt(j);
+                        rect.setOnClickListener(null);
+                    }
+
+                    // Execute the ComputerMoveTask if the player is white and it's their turn
+                    new ComputerMoveTask().execute();
+                } else if (piece.length() > 0 && currentSelection.length() == 0) {
+                    if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
+                        Log.d("LOG123", "You clicked on a valid piece");
+
+                        // Store the current selection
+                        currentSelection = getBoardPositionFromRowCol(row, col);
+                    }
+                } else if (currentSelection.length() > 0 && isPlayerTurn) {
+                    String move = currentSelection + getBoardPositionFromRowCol(row, col);
+
+                    // Check if the move is legal
+                    boolean isLegal = false;
+                    List<Move> moves = board.legalMoves();
+                    for (Move m : moves) {
+                        if (m.toString().equals(move)) {
+                            isLegal = true;
                             break;
                         }
                     }
 
-                    // Get the piece on the clicked square
-                    String piece = getPieceFromBoardPosition(row, col);
+                    if (isLegal) {
+                        // Make the move
+                        board.doMove(new Move(move, board.getSideToMove()));
 
-                    if (piece.length() > 0 && isPlayerTurn) {
-                        if (!isBlack && Character.isUpperCase(piece.charAt(0))) {
-                            Log.d("LOG123", "You are playing black and clicked on a black piece ");
-                            currentSelection = getBoardPositionFromRowCol(row, col);
+                        // Update the FEN
+                        fen = board.getFen();
+                        setBoardPositionFromFEN(fen, isBlack);
+                        isPlayerTurn = !isPlayerTurn;
 
-                        } else if (isBlack && Character.isLowerCase(piece.charAt(0))) {
-                            Log.d("LOG123", "You are playing white and clicked on a white piece");
-                            currentSelection = getBoardPositionFromRowCol(row, col);
+                        // Disable the OnClickListener for the chessboard squares
+                        for (int j = 0; j < chessboard.getChildCount(); j++) {
+                            ImageView rect = (ImageView) chessboard.getChildAt(j);
+                            rect.setOnClickListener(null);
+                        }
+
+                        // Execute the ComputerMoveTask if the player is white and it's their turn
+                        if (!isPlayerTurn && !isBlack) {
+                            new ComputerMoveTask().execute();
+                        }
+                    } else {
+                        Log.d("LOG123", "Illegal move");
+                        // display all the list moves
+                        for (Move m : moves) {
+                            Log.d("LOG123", m.toString());
                         }
                     }
-
-
+                    currentSelection = "";
                 }
             });
         }
@@ -95,6 +152,60 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private String getPieceFromBoardPosition(int row, int col) {
+
+        ImageView square = (ImageView) chessboard.getChildAt(row * 8 + col);
+        Drawable drawable = square.getDrawable();
+        if (drawable == null) {
+            return "";
+        }
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            if (bitmap == null) {
+                return "";
+            }
+            Resources resources = getResources();
+
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.br))) {
+                return "r";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bn))) {
+                return "n";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bb))) {
+                return "b";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bq))) {
+                return "q";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bk))) {
+                return "k";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bp))) {
+                return "p";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wr))) {
+                return "R";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wn))) {
+                return "N";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wb))) {
+                return "B";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wq))) {
+                return "Q";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wk))) {
+                return "K";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wp))) {
+                return "P";
+            }
+        }
+        return "";
+    }
 
     // Board set up
     private void setChessboardDimensions() {
@@ -107,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
         layoutParams.height = screenWidth;
         chessboard.setLayoutParams(layoutParams);
     }
-
     private void createSquares(boolean isWhiteAtBottom) {
         boolean isWhite = isWhiteAtBottom;
 
@@ -135,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
             isWhite = !isWhite;
         }
     }
-
 
     // Game loop methods
     private void setBoardPositionFromFEN(String fen, boolean isWhiteAtBottom) {
@@ -219,7 +328,6 @@ public class MainActivity extends AppCompatActivity {
         // Additional processing based on other FEN information can be added here
         // For example, you can use the `activeColor`, `castlingRights`, `enPassantSquare`, `halfMoveClock`, and `fullMoveNumber` variables
     }
-
     private int getPieceResourceId(char piece) {
         // Map FEN characters to piece resource IDs
         switch (piece) {
@@ -253,118 +361,171 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String getPieceFromBoardPosition(int row, int col) {
-        ImageView square = (ImageView) chessboard.getChildAt(row * 8 + col);
-        Drawable drawable = square.getDrawable();
-        if (drawable == null) {
-            return "";
-        }
-        if (drawable instanceof BitmapDrawable) {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-            if (bitmap == null) {
-                return "";
-            }
-            Resources resources = getResources();
-
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.br))) {
-                return "r";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bn))) {
-                return "n";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bb))) {
-                return "b";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bq))) {
-                return "q";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bk))) {
-                return "k";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bp))) {
-                return "p";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wr))) {
-                return "R";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wn))) {
-                return "N";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wb))) {
-                return "B";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wq))) {
-                return "Q";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wk))) {
-                return "K";
-            }
-            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wp))) {
-                return "P";
-            }
-        }
-        return "";
-    }
-
     private String getBoardPositionFromRowCol(int row, int col) {
+        row = isBlack ? 7 - row : row; // Flip row if playing as black
+
+
         String[] cols = {"a", "b", "c", "d", "e", "f", "g", "h"};
         String[] rows = {"8", "7", "6", "5", "4", "3", "2", "1"};
         return cols[col] + rows[row];
     }
 
+    // ComputerMoveTask
+    private class ComputerMoveTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            String url = "https://6f19-173-63-234-100.ngrok-free.app/engine/level/?fen=" + fen + "&skill-level=" + level;
+            String headerKey = "ngrok-skip-browser-warning";
+            String headerValue = "true";
+
+            try {
+                URL urlObject = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty(headerKey, headerValue);
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String line;
+                    StringBuilder content = new StringBuilder();
+                    while ((line = reader.readLine()) != null) {
+                        content.append(line);
+                    }
+                    reader.close();
+
+                    Log.d("LOG123", content.toString());
+                    final String moveContent = content.toString();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            board.doMove(moveContent);
+
+                            // Update the FEN
+                            fen = board.getFen();
+                            setBoardPositionFromFEN(fen, isBlack);
+                            isPlayerTurn = !isPlayerTurn;
+                        }
+                    });
+
+                } else {
+                    Log.d("LOG123", "Error: " + responseCode);
+                }
+
+                connection.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+
+            // Reset the onClickListeners
+            // Set onClickListeners to each square
+            // Set onClickListeners to each square
+            // Set onClickListeners to each square
+            // Set onClickListeners to each square
+            // Set onClickListeners to each square
+            for (int i = 0; i < chessboard.getChildCount(); i++) {
+                ImageView square = (ImageView) chessboard.getChildAt(i);
+                square.setOnClickListener(v -> {
+                    // Get the row and column of the clicked square
+                    int row = 0;
+                    int col = 0;
+                    for (int i1 = 0; i1 < chessboard.getChildCount(); i1++) {
+                        if (chessboard.getChildAt(i1) == v) {
+                            row = i1 / 8;
+                            col = i1 % 8;
+                            break;
+                        }
+                    }
+
+                    // Get the piece on the clicked square
+                    String piece = getPieceFromBoardPosition(row, col);
+
+                    Log.d("LOG123", String.valueOf(piece.length()));
+                    if (isBlack && !isPlayerTurn) {
+                        // Disable the OnClickListener for the chessboard squares
+                        for (int j = 0; j < chessboard.getChildCount(); j++) {
+                            ImageView rect = (ImageView) chessboard.getChildAt(j);
+                            rect.setOnClickListener(null);
+                        }
+
+                        // Execute the ComputerMoveTask if the player is white and it's their turn
+                        new ComputerMoveTask().execute();
+                    } else if (piece.length() > 0 && currentSelection.length() == 0) {
+                        if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
+                            Log.d("LOG123", "You clicked on a valid piece");
+
+                            // Store the current selection
+                            currentSelection = getBoardPositionFromRowCol(row, col);
+                        }
+                    } else if (currentSelection.length() > 0 && isPlayerTurn) {
+                        String move = currentSelection + getBoardPositionFromRowCol(row, col);
+
+                        // Check if the move is legal
+                        boolean isLegal = false;
+                        List<Move> moves = board.legalMoves();
+                        for (Move m : moves) {
+                            if (m.toString().equals(move)) {
+                                isLegal = true;
+                                break;
+                            }
+                        }
+
+                        if (isLegal) {
+                            // Make the move
+                            board.doMove(new Move(move, board.getSideToMove()));
+
+                            // Update the FEN
+                            fen = board.getFen();
+                            setBoardPositionFromFEN(fen, isBlack);
+                            isPlayerTurn = !isPlayerTurn;
+
+                            // Disable the OnClickListener for the chessboard squares
+                            for (int j = 0; j < chessboard.getChildCount(); j++) {
+                                ImageView rect = (ImageView) chessboard.getChildAt(j);
+                                rect.setOnClickListener(null);
+                            }
+
+                            // Execute the ComputerMoveTask if the player is white and it's their turn
+                            if (!isPlayerTurn && !isBlack) {
+                                new ComputerMoveTask().execute();
+                            }
+                        } else {
+                            Log.d("LOG123", "Illegal move " + move);
+                            // display all the list moves
+                            for (Move m : moves) {
+                                Log.d("LOG123", m.toString());
+                            }
+                        }
+                        currentSelection = "";
+                    }
+                });
+            }
+
+
+        }
+
+    }
+
 
     //!TODO: methods to make
-    // TODO: getLegalMoves(String fen, String piece);
-    // TODO: getLegalMovesIfKingIsInCheck(String fen, String piece);
-    // TODO: isCheckMate(String fen);
-    // TODO: isStaleMate(String fen);
-    // TODO: isDraw(String fen);
+    // TODO: Check for game ending
     // TODO: isThreeFoldRepetition(String fen); #AMBITOUS AF
     // TODO: isFiftyMoveRule(String fen); #AMBITOUS AF
     // TODO: isInsufficientMaterial(String fen); #AMBITOUS AF
 
-
-//    private List<String> getLegalMoves(String fen, int row, int col) {
-//        List<String> legalMoves = new ArrayList<>();
-//        String piece = getPieceFromBoardPosition(row, col);
-//
-//        switch (piece) {
-//            case "r":
-//            case "R":
-//                return getRookMoves(fen, row, col);
-//            case "n":
-//            case "N":
-//                return getKnightMoves(fen, row, col);
-//            case "b":
-//            case "B":
-//                return getBishopMoves(fen, row, col);
-//            case "q":
-//            case "Q":
-//                return getQueenMoves(fen, row, col);
-//            case "k":
-//            case "K":
-//                return getKingMoves(fen, row, col);
-//            case "p":
-//            case "P":
-//                return getPawnMoves(fen, row, col);
-//            default:
-//                return legalMoves;
-//        }
-//    }
-
-
 }
 //!TODO IN COMPUTER SCREEN
-// TODO: class for each square or piece
-// TODO: update moves based on clicks
-// TODO: only allowed to make legal moves
-// TODO: only allowed to make moves during your turn
-// TODO: time
 // TODO: check checkmate
 // TODO: check stalemate
 // TODO: check draw
-// TODO: AI responses
 // TODO: Update statistics
 // TODO: Update game history
 
