@@ -1,124 +1,102 @@
 package com.example.chess;
 
+
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import java.util.ArrayList;
+import com.github.bhlangonijr.chesslib.Board;
 
 
 public class MainActivity extends AppCompatActivity {
 
     // Variables
-    public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    public static boolean isBlack = false;
+    public static boolean isPlayerTurn;
+    public static String fen = "r2qk2r/pp1n1ppp/2pbpn2/3p1b2/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQkq - 0 1";
     GridLayout chessboard;
     ConstraintLayout mainLayout;
-    ArrayList<ChessPiece> blackPieces = new ArrayList<>();
-    ArrayList<ChessPiece> whitePieces = new ArrayList<>();
-
+    String currentSelection = "";
+    Board board;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // Variables
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
-
-
+        board = new Board();
+//
         // Initialize
         setChessboardDimensions();
-        createSquares();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
+        // Set this value based on the desired orientation of the chessboard
+        createSquares(isBlack);
+        setBoardPositionFromFEN(fen, isBlack);
 
-        // Initialize and place pieces on the board
-        ChessPiece blackRook = new ChessPiece(0, 0, createChessPiece(R.drawable.br, 0, 0), "br");
-        ChessPiece blackRook2 = new ChessPiece(0, 7, createChessPiece(R.drawable.br, 0, 7), "br");
-        ChessPiece blackKnight = new ChessPiece(0, 1, createChessPiece(R.drawable.bn, 0, 1), "bn");
-        ChessPiece blackKnight2 = new ChessPiece(0, 6, createChessPiece(R.drawable.bn, 0, 6), "bn");
-        ChessPiece blackBishop = new ChessPiece(0, 2, createChessPiece(R.drawable.bb, 0, 2), "bb");
-        ChessPiece blackBishop2 = new ChessPiece(0, 5, createChessPiece(R.drawable.bb, 0, 5), "bb");
-        ChessPiece blackQueen = new ChessPiece(0, 3, createChessPiece(R.drawable.bq, 0, 3), "bq");
-        ChessPiece blackKing = new ChessPiece(0, 4, createChessPiece(R.drawable.bk, 0, 4), "bk");
-        ChessPiece blackPawn1 = new ChessPiece(1, 0, createChessPiece(R.drawable.bp, 1, 0), "bp");
-        ChessPiece blackPawn2 = new ChessPiece(1, 1, createChessPiece(R.drawable.bp, 1, 1), "bp");
-        ChessPiece blackPawn3 = new ChessPiece(1, 2, createChessPiece(R.drawable.bp, 1, 2), "bp");
-        ChessPiece blackPawn4 = new ChessPiece(1, 3, createChessPiece(R.drawable.bp, 1, 3), "bp");
-        ChessPiece blackPawn5 = new ChessPiece(1, 4, createChessPiece(R.drawable.bp, 1, 4), "bp");
-        ChessPiece blackPawn6 = new ChessPiece(1, 5, createChessPiece(R.drawable.bp, 1, 5), "bp");
-        ChessPiece blackPawn7 = new ChessPiece(1, 6, createChessPiece(R.drawable.bp, 1, 6), "bp");
-        ChessPiece blackPawn8 = new ChessPiece(1, 7, createChessPiece(R.drawable.bp, 1, 7), "bp");
+        // Turn
+        isPlayerTurn = !isBlack;
 
-        ChessPiece whiteRook = new ChessPiece(7, 0, createChessPiece(R.drawable.wr, 7, 0), "wr");
-        ChessPiece whiteRook2 = new ChessPiece(7, 7, createChessPiece(R.drawable.wr, 7, 7), "wr");
-        ChessPiece whiteKnight = new ChessPiece(7, 1, createChessPiece(R.drawable.wn, 7, 1), "wn");
-        ChessPiece whiteKnight2 = new ChessPiece(7, 6, createChessPiece(R.drawable.wn, 7, 6), "wn");
-        ChessPiece whiteBishop = new ChessPiece(7, 2, createChessPiece(R.drawable.wb, 7, 2), "wb");
-        ChessPiece whiteBishop2 = new ChessPiece(7, 5, createChessPiece(R.drawable.wb, 7, 5), "wb");
-        ChessPiece whiteQueen = new ChessPiece(7, 3, createChessPiece(R.drawable.wq, 7, 3), "wq");
-        ChessPiece whiteKing = new ChessPiece(7, 4, createChessPiece(R.drawable.wk, 7, 4), "wk");
-        ChessPiece whitePawn1 = new ChessPiece(6, 0, createChessPiece(R.drawable.wp, 6, 0), "wp");
-        ChessPiece whitePawn2 = new ChessPiece(6, 1, createChessPiece(R.drawable.wp, 6, 1), "wp");
-        ChessPiece whitePawn3 = new ChessPiece(6, 2, createChessPiece(R.drawable.wp, 6, 2), "wp");
-        ChessPiece whitePawn4 = new ChessPiece(6, 3, createChessPiece(R.drawable.wp, 6, 3), "wp");
-        ChessPiece whitePawn5 = new ChessPiece(6, 4, createChessPiece(R.drawable.wp, 6, 4), "wp");
-        ChessPiece whitePawn6 = new ChessPiece(6, 5, createChessPiece(R.drawable.wp, 6, 5), "wp");
-        ChessPiece whitePawn7 = new ChessPiece(6, 6, createChessPiece(R.drawable.wp, 6, 6), "wp");
-        ChessPiece whitePawn8 = new ChessPiece(6, 7, createChessPiece(R.drawable.wp, 6, 7), "wp");
-        blackPieces.add(blackRook);
-        blackPieces.add(blackRook2);
-        blackPieces.add(blackKnight);
-        blackPieces.add(blackKnight2);
-        blackPieces.add(blackBishop);
-        blackPieces.add(blackBishop2);
-        blackPieces.add(blackQueen);
-        blackPieces.add(blackKing);
-        blackPieces.add(blackPawn1);
-        blackPieces.add(blackPawn2);
-        blackPieces.add(blackPawn3);
-        blackPieces.add(blackPawn4);
-        blackPieces.add(blackPawn5);
-        blackPieces.add(blackPawn6);
-        blackPieces.add(blackPawn7);
-        blackPieces.add(blackPawn8);
+        // Set onClickListeners to each square
+        for (int i = 0; i < chessboard.getChildCount(); i++) {
+            ImageView square = (ImageView) chessboard.getChildAt(i);
+            square.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Get the row and column of the clicked square
+                    int row = 0;
+                    int col = 0;
+                    for (int i = 0; i < chessboard.getChildCount(); i++) {
+                        if (chessboard.getChildAt(i) == v) {
+                            row = i / 8;
+                            col = i % 8;
+                            break;
+                        }
+                    }
 
-        whitePieces.add(whiteRook);
-        whitePieces.add(whiteRook2);
-        whitePieces.add(whiteKnight);
-        whitePieces.add(whiteKnight2);
-        whitePieces.add(whiteBishop);
-        whitePieces.add(whiteBishop2);
-        whitePieces.add(whiteQueen);
-        whitePieces.add(whiteKing);
-        whitePieces.add(whitePawn1);
-        whitePieces.add(whitePawn2);
-        whitePieces.add(whitePawn3);
-        whitePieces.add(whitePawn4);
-        whitePieces.add(whitePawn5);
-        whitePieces.add(whitePawn6);
-        whitePieces.add(whitePawn7);
-        whitePieces.add(whitePawn8);
+                    // Get the piece on the clicked square
+                    String piece = getPieceFromBoardPosition(row, col);
+
+                    if (piece.length() > 0 && isPlayerTurn) {
+                        if (!isBlack && Character.isUpperCase(piece.charAt(0))) {
+                            Log.d("LOG123", "You are playing black and clicked on a black piece ");
+                            currentSelection = getBoardPositionFromRowCol(row, col);
+
+                        } else if (isBlack && Character.isLowerCase(piece.charAt(0))) {
+                            Log.d("LOG123", "You are playing white and clicked on a white piece");
+                            currentSelection = getBoardPositionFromRowCol(row, col);
+                        }
+                    }
 
 
-        // add a textview at the top
+                }
+            });
+        }
 
 
     }
 
-    // Methods
+
+    // Board set up
     private void setChessboardDimensions() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -130,30 +108,22 @@ public class MainActivity extends AppCompatActivity {
         chessboard.setLayoutParams(layoutParams);
     }
 
-    private void createSquares() {
-        boolean isWhite = true;
+    private void createSquares(boolean isWhiteAtBottom) {
+        boolean isWhite = isWhiteAtBottom;
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 ImageView square = new ImageView(this);
 
-                if (isWhite) {
+                if (!isWhite) {
                     square.setBackgroundColor(Color.parseColor("#6ac3bd"));
                 } else {
-                    square.setBackgroundColor(Color.TRANSPARENT);
+                    square.setBackgroundColor(Color.WHITE);
                 }
 
-                final String chessCoordinate = getChessCoordinate(row, col);
-                square.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showToast(chessCoordinate);
-                    }
-                });
-
                 GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-                layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutParams.width = 0;
+                layoutParams.height = 0;
                 layoutParams.rowSpec = GridLayout.spec(row, 1f);
                 layoutParams.columnSpec = GridLayout.spec(col, 1f);
                 square.setLayoutParams(layoutParams);
@@ -166,50 +136,226 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String getChessCoordinate(int row, int col) {
-        char file = (char) ('a' + col);
-        char rank = (char) ('8' - row);
-        return String.valueOf(file) + rank;
+
+    // Game loop methods
+    private void setBoardPositionFromFEN(String fen, boolean isWhiteAtBottom) {
+        // Split the FEN string into separate parts
+        String[] fenParts = fen.split(" ");
+
+        String position = fenParts[0];
+        String activeColor = fenParts[1];
+        String castlingRights = fenParts[2];
+        String enPassantSquare = fenParts[3];
+        String halfMoveClock = fenParts[4];
+        String fullMoveNumber = fenParts[5];
+
+        // Clear the existing chessboard
+        chessboard.removeAllViews();
+
+        String[] positionRows = position.split("/");
+
+        boolean isWhite = isWhiteAtBottom;
+
+        for (int row = 0; row < 8; row++) {
+            String fenRow;
+            if (isWhiteAtBottom) {
+                fenRow = positionRows[7 - row]; // Reverse the rows for white at the bottom
+            } else {
+                fenRow = positionRows[row]; // Keep the rows as is for black at the bottom
+            }
+
+            int col = 0;
+
+            for (int i = 0; i < fenRow.length(); i++) {
+                char c = fenRow.charAt(i);
+
+                if (Character.isDigit(c)) {
+                    // Empty squares indicated by a number in the FEN
+                    int emptySquares = Character.getNumericValue(c);
+
+                    for (int j = 0; j < emptySquares; j++) {
+                        ImageView square = new ImageView(this);
+                        if (!isWhite) {
+                            square.setBackgroundColor(Color.parseColor("#6ac3bd"));
+                        } else {
+                            square.setBackgroundColor(Color.TRANSPARENT);
+                        }
+
+                        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+                        layoutParams.width = 0;
+                        layoutParams.height = 0;
+                        layoutParams.rowSpec = GridLayout.spec(row, 1f);
+                        layoutParams.columnSpec = GridLayout.spec(col, 1f);
+                        square.setLayoutParams(layoutParams);
+
+                        chessboard.addView(square);
+
+                        col++;
+                        isWhite = !isWhite; // Toggle color
+                    }
+                } else {
+                    // Non-empty squares represent pieces
+                    ImageView square = new ImageView(this);
+                    if (!isWhite) {
+                        square.setBackgroundColor(Color.parseColor("#6ac3bd"));
+                    } else {
+                        square.setBackgroundColor(Color.TRANSPARENT);
+                    }
+                    int pieceResourceId = getPieceResourceId(c);
+                    square.setImageResource(pieceResourceId);
+                    GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+                    layoutParams.width = 0;
+                    layoutParams.height = 0;
+                    layoutParams.rowSpec = GridLayout.spec(row, 1f);
+                    layoutParams.columnSpec = GridLayout.spec(col, 1f);
+                    square.setLayoutParams(layoutParams);
+                    chessboard.addView(square);
+                    col++;
+                    isWhite = !isWhite; // Toggle color
+                }
+            }
+            isWhite = !isWhite; // Toggle color at the end of each row
+        }
+        // Additional processing based on other FEN information can be added here
+        // For example, you can use the `activeColor`, `castlingRights`, `enPassantSquare`, `halfMoveClock`, and `fullMoveNumber` variables
     }
 
-    private void showToast(String message) {
-        Toast toast = Toast.makeText(this, "Clicked Square: " + message, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
+    private int getPieceResourceId(char piece) {
+        // Map FEN characters to piece resource IDs
+        switch (piece) {
+            case 'r':
+                return R.drawable.br;
+            case 'n':
+                return R.drawable.bn;
+            case 'b':
+                return R.drawable.bb;
+            case 'q':
+                return R.drawable.bq;
+            case 'k':
+                return R.drawable.bk;
+            case 'p':
+                return R.drawable.bp;
+            case 'R':
+                return R.drawable.wr;
+            case 'N':
+                return R.drawable.wn;
+            case 'B':
+                return R.drawable.wb;
+            case 'Q':
+                return R.drawable.wq;
+            case 'K':
+                return R.drawable.wk;
+
+            case 'P':
+                return R.drawable.wp;
+            default:
+                return 0; // Return 0 for an unknown piece
+        }
     }
 
-    private ImageView createChessPiece(int imageResourceId, int x, int y) {
-        ImageView piece = new ImageView(this);
-        piece.setImageResource(imageResourceId);
-        piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        piece.setAdjustViewBounds(true);
+    private String getPieceFromBoardPosition(int row, int col) {
+        ImageView square = (ImageView) chessboard.getChildAt(row * 8 + col);
+        Drawable drawable = square.getDrawable();
+        if (drawable == null) {
+            return "";
+        }
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            if (bitmap == null) {
+                return "";
+            }
+            Resources resources = getResources();
 
-        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-        layoutParams.width = 0;
-        layoutParams.height = 0;
-        layoutParams.rowSpec = GridLayout.spec(x, 1);
-        layoutParams.columnSpec = GridLayout.spec(y, 1);
-        layoutParams.setGravity(Gravity.FILL);
-        piece.setLayoutParams(layoutParams);
-
-        return piece;
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.br))) {
+                return "r";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bn))) {
+                return "n";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bb))) {
+                return "b";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bq))) {
+                return "q";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bk))) {
+                return "k";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.bp))) {
+                return "p";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wr))) {
+                return "R";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wn))) {
+                return "N";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wb))) {
+                return "B";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wq))) {
+                return "Q";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wk))) {
+                return "K";
+            }
+            if (bitmap.sameAs(BitmapFactory.decodeResource(resources, R.drawable.wp))) {
+                return "P";
+            }
+        }
+        return "";
     }
 
-    // Create a method to update the position of a piece on the board
-    private void updatePosition(ImageView piece, int x, int y) {
-        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-        layoutParams.width = 0;
-        layoutParams.height = 0;
-        layoutParams.rowSpec = GridLayout.spec(x, 1);
-        layoutParams.columnSpec = GridLayout.spec(y, 1);
-        layoutParams.setGravity(Gravity.FILL);
-        piece.setLayoutParams(layoutParams);
+    private String getBoardPositionFromRowCol(int row, int col) {
+        String[] cols = {"a", "b", "c", "d", "e", "f", "g", "h"};
+        String[] rows = {"8", "7", "6", "5", "4", "3", "2", "1"};
+        return cols[col] + rows[row];
     }
+
+
+    //!TODO: methods to make
+    // TODO: getLegalMoves(String fen, String piece);
+    // TODO: getLegalMovesIfKingIsInCheck(String fen, String piece);
+    // TODO: isCheckMate(String fen);
+    // TODO: isStaleMate(String fen);
+    // TODO: isDraw(String fen);
+    // TODO: isThreeFoldRepetition(String fen); #AMBITOUS AF
+    // TODO: isFiftyMoveRule(String fen); #AMBITOUS AF
+    // TODO: isInsufficientMaterial(String fen); #AMBITOUS AF
+
+
+//    private List<String> getLegalMoves(String fen, int row, int col) {
+//        List<String> legalMoves = new ArrayList<>();
+//        String piece = getPieceFromBoardPosition(row, col);
+//
+//        switch (piece) {
+//            case "r":
+//            case "R":
+//                return getRookMoves(fen, row, col);
+//            case "n":
+//            case "N":
+//                return getKnightMoves(fen, row, col);
+//            case "b":
+//            case "B":
+//                return getBishopMoves(fen, row, col);
+//            case "q":
+//            case "Q":
+//                return getQueenMoves(fen, row, col);
+//            case "k":
+//            case "K":
+//                return getKingMoves(fen, row, col);
+//            case "p":
+//            case "P":
+//                return getPawnMoves(fen, row, col);
+//            default:
+//                return legalMoves;
+//        }
+//    }
 
 
 }
-
-//! TODO IN COMPUTER SCREEN
+//!TODO IN COMPUTER SCREEN
 // TODO: class for each square or piece
 // TODO: update moves based on clicks
 // TODO: only allowed to make legal moves
