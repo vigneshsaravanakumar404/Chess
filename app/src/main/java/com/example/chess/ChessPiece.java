@@ -9,6 +9,14 @@ public class ChessPiece {
     String piece;
     ImageView image;
 
+    public ChessPiece(int x, int y, ImageView image, String piece) {
+        this.x = x;
+        this.y = y;
+        this.image = image;
+        this.piece = piece;
+
+    }
+
     public String getPiece() {
         return piece;
     }
@@ -23,14 +31,6 @@ public class ChessPiece {
 
     public void setImage(ImageView image) {
         this.image = image;
-    }
-
-    public ChessPiece(int x, int y, ImageView image, String piece) {
-        this.x = x;
-        this.y = y;
-        this.image = image;
-        this.piece = piece;
-
     }
 
     public int getX() {

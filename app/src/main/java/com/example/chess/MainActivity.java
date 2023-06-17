@@ -9,13 +9,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean isBlack = false;
     public static boolean isPlayerTurn;
     public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public static int level = 20;
+    public static int level = 1;
     GridLayout chessboard;
     ConstraintLayout mainLayout;
     String currentSelection = "";
@@ -57,97 +59,107 @@ public class MainActivity extends AppCompatActivity {
         setChessboardDimensions();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-
-        // Set this value based on the desired orientation of the chessboard
         createSquares(isBlack);
         setBoardPositionFromFEN(fen, isBlack);
-
-        // Turn
         isPlayerTurn = !isBlack;
 
         // Set onClickListeners to each square
-        for (int i = 0; i < chessboard.getChildCount(); i++) {
-            ImageView square = (ImageView) chessboard.getChildAt(i);
-            square.setOnClickListener(v -> {
-                // Get the row and column of the clicked square
-                int row = 0;
-                int col = 0;
-                for (int i1 = 0; i1 < chessboard.getChildCount(); i1++) {
-                    if (chessboard.getChildAt(i1) == v) {
-                        row = i1 / 8;
-                        col = i1 % 8;
-                        break;
-                    }
-                }
-
-                // Get the piece on the clicked square
-                String piece = getPieceFromBoardPosition(row, col);
-
-                Log.d("LOG123", String.valueOf(piece.length()));
-                if (isGameOver()) {
-                    // code here
-                } else if (!isPlayerTurn) {
-                    // Disable the OnClickListener for the chessboard squares
-                    for (int j = 0; j < chessboard.getChildCount(); j++) {
-                        ImageView rect = (ImageView) chessboard.getChildAt(j);
-                        rect.setOnClickListener(null);
-                    }
-                    // Execute the ComputerMoveTask if it's not the player's turn
-                    new ComputerMoveTask().execute();
-                } else if (piece.length() > 0 && currentSelection.length() == 0) {
-                    if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
-                        Log.d("LOG123", "You clicked on a valid piece");
-
-                        // Store the current selection
-                        currentSelection = getBoardPositionFromRowCol(row, col);
-                    }
-                } else if (currentSelection.length() > 0) {
-                    String move = currentSelection + getBoardPositionFromRowCol(row, col);
-
-                    // Check if the move is legal
-                    boolean isLegal = false;
-                    List<Move> moves = board.legalMoves();
-                    for (Move m : moves) {
-                        if (m.toString().equals(move)) {
-                            isLegal = true;
-                            break;
-                        }
-                    }
-
-                    if (isLegal) {
-                        // Make the move
-                        board.doMove(new Move(move, board.getSideToMove()));
-
-                        // Update the FEN
-                        fen = board.getFen();
-                        setBoardPositionFromFEN(fen, isBlack);
-                        isPlayerTurn = !isPlayerTurn;
-
-                        // Disable the OnClickListener for the chessboard squares
-                        for (int j = 0; j < chessboard.getChildCount(); j++) {
-                            ImageView rect = (ImageView) chessboard.getChildAt(j);
-                            rect.setOnClickListener(null);
-                        }
-
-                        // Execute the ComputerMoveTask if it's not the player's turn
-                        if (!isPlayerTurn) {
-                            new ComputerMoveTask().execute();
-                        }
-                    } else {
-                        Log.d("LOG123", "Illegal move " + move);
-                        // display all the list moves
-                        for (Move m : moves) {
-                            Log.d("LOG123", m.toString());
-                        }
-                    }
-                    currentSelection = "";
-                }
-            });
-        }
+        setOnClickListeners();
 
 
     }
 
+
+    // Board set up
+    private void setChessboardDimensions() {
+        int screenWidth = chessboard.getWidth();
+
+        ViewGroup.LayoutParams layoutParams = chessboard.getLayoutParams();
+        layoutParams.width = screenWidth;
+        layoutParams.height = screenWidth;
+        chessboard.setLayoutParams(layoutParams);
+    }
+    private void createSquares(boolean isWhiteAtBottom) {
+        boolean isWhite = isWhiteAtBottom;
+
+        for (int i = 0; i < 64; i++) {
+            ImageView square = new ImageView(this);
+            square.setBackgroundColor(isWhite ? Color.WHITE : Color.parseColor("#6ac3bd"));
+
+            GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+            layoutParams.width = 0;
+            layoutParams.height = 0;
+            layoutParams.rowSpec = GridLayout.spec(i / 8, 1f);
+            layoutParams.columnSpec = GridLayout.spec(i % 8, 1f);
+            square.setLayoutParams(layoutParams);
+
+            chessboard.addView(square);
+
+            isWhite = !isWhite;
+        }
+    }
+
+    private void setOnClickListeners() {
+        for (int i = 0; i < chessboard.getChildCount(); i++) {
+            ImageView square = (ImageView) chessboard.getChildAt(i);
+            square.setOnClickListener(v -> {
+                int position = chessboard.indexOfChild(v);
+                int row = position / 8;
+                int col = position % 8;
+
+                String piece = getPieceFromBoardPosition(row, col);
+
+                if (!isPlayerTurn) {
+                    disableOnClickListeners();
+                    new ComputerMoveTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else if (piece.length() > 0 && currentSelection.isEmpty()) {
+                    if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
+                        currentSelection = getBoardPositionFromRowCol(row, col);
+                    }
+                } else if (!currentSelection.isEmpty()) {
+                    String move = currentSelection + getBoardPositionFromRowCol(row, col);
+                    boolean isLegal = isMoveLegal(move);
+
+                    if (isLegal) {
+                        makeMove(move);
+                        disableOnClickListeners();
+
+                        if (!isPlayerTurn) {
+                            new ComputerMoveTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Illegal move!", Toast.LENGTH_SHORT).show();
+                    }
+                    currentSelection = "";
+                }
+
+                if (isGameOver()) {
+                    Log.d("GAME OVER", "GAME OVER");
+                    if (isCheckmate()) {
+                        Toast.makeText(MainActivity.this, "Checkmate!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Stalemate!", Toast.LENGTH_SHORT).show();
+                    }
+                    disableOnClickListeners();
+                }
+            });
+        }
+    }
+
+    private boolean isMoveLegal(String move) {
+        List<Move> moves = board.legalMoves();
+        return moves.stream().anyMatch(m -> m.toString().equals(move));
+    }
+
+    private void makeMove(String move) {
+        board.doMove(new Move(move, board.getSideToMove()));
+        fen = board.getFen();
+        setBoardPositionFromFEN(fen, isBlack);
+        isPlayerTurn = !isPlayerTurn;
+    }
+
+
+    // Game loop methods
     private String getPieceFromBoardPosition(int row, int col) {
 
         ImageView square = (ImageView) chessboard.getChildAt(row * 8 + col);
@@ -203,56 +215,11 @@ public class MainActivity extends AppCompatActivity {
         return "";
     }
 
-    // Board set up
-    private void setChessboardDimensions() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenWidth = displayMetrics.widthPixels;
-
-        ViewGroup.LayoutParams layoutParams = chessboard.getLayoutParams();
-        layoutParams.width = screenWidth;
-        layoutParams.height = screenWidth;
-        chessboard.setLayoutParams(layoutParams);
-    }
-    private void createSquares(boolean isWhiteAtBottom) {
-        boolean isWhite = isWhiteAtBottom;
-
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                ImageView square = new ImageView(this);
-
-                if (!isWhite) {
-                    square.setBackgroundColor(Color.parseColor("#6ac3bd"));
-                } else {
-                    square.setBackgroundColor(Color.WHITE);
-                }
-
-                GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-                layoutParams.width = 0;
-                layoutParams.height = 0;
-                layoutParams.rowSpec = GridLayout.spec(row, 1f);
-                layoutParams.columnSpec = GridLayout.spec(col, 1f);
-                square.setLayoutParams(layoutParams);
-
-                chessboard.addView(square);
-
-                isWhite = !isWhite;
-            }
-            isWhite = !isWhite;
-        }
-    }
-
-    // Game loop methods
     private void setBoardPositionFromFEN(String fen, boolean isWhiteAtBottom) {
         // Split the FEN string into separate parts
         String[] fenParts = fen.split(" ");
 
         String position = fenParts[0];
-        String activeColor = fenParts[1];
-        String castlingRights = fenParts[2];
-        String enPassantSquare = fenParts[3];
-        String halfMoveClock = fenParts[4];
-        String fullMoveNumber = fenParts[5];
 
         // Clear the existing chessboard
         chessboard.removeAllViews();
@@ -262,37 +229,17 @@ public class MainActivity extends AppCompatActivity {
         boolean isWhite = isWhiteAtBottom;
 
         for (int row = 0; row < 8; row++) {
-            String fenRow;
-            if (isWhiteAtBottom) {
-                fenRow = positionRows[7 - row]; // Reverse the rows for white at the bottom
-            } else {
-                fenRow = positionRows[row]; // Keep the rows as is for black at the bottom
-            }
+            String fenRow = isWhiteAtBottom ? positionRows[7 - row] : positionRows[row];
 
             int col = 0;
 
-            for (int i = 0; i < fenRow.length(); i++) {
-                char c = fenRow.charAt(i);
-
+            for (char c : fenRow.toCharArray()) {
                 if (Character.isDigit(c)) {
                     // Empty squares indicated by a number in the FEN
                     int emptySquares = Character.getNumericValue(c);
 
                     for (int j = 0; j < emptySquares; j++) {
-                        ImageView square = new ImageView(this);
-                        if (!isWhite) {
-                            square.setBackgroundColor(Color.parseColor("#6ac3bd"));
-                        } else {
-                            square.setBackgroundColor(Color.TRANSPARENT);
-                        }
-
-                        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-                        layoutParams.width = 0;
-                        layoutParams.height = 0;
-                        layoutParams.rowSpec = GridLayout.spec(row, 1f);
-                        layoutParams.columnSpec = GridLayout.spec(col, 1f);
-                        square.setLayoutParams(layoutParams);
-
+                        ImageView square = createChessboardSquare(isWhite);
                         chessboard.addView(square);
 
                         col++;
@@ -300,71 +247,68 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } else {
                     // Non-empty squares represent pieces
-                    ImageView square = new ImageView(this);
-                    if (!isWhite) {
-                        square.setBackgroundColor(Color.parseColor("#6ac3bd"));
-                    } else {
-                        square.setBackgroundColor(Color.TRANSPARENT);
-                    }
+                    ImageView square = createChessboardSquare(isWhite);
                     int pieceResourceId = getPieceResourceId(c);
                     square.setImageResource(pieceResourceId);
-                    GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
-                    layoutParams.width = 0;
-                    layoutParams.height = 0;
-                    layoutParams.rowSpec = GridLayout.spec(row, 1f);
-                    layoutParams.columnSpec = GridLayout.spec(col, 1f);
-                    square.setLayoutParams(layoutParams);
                     chessboard.addView(square);
+
                     col++;
                     isWhite = !isWhite; // Toggle color
                 }
             }
             isWhite = !isWhite; // Toggle color at the end of each row
         }
-        // Additional processing based on other FEN information can be added here
-        // For example, you can use the `activeColor`, `castlingRights`, `enPassantSquare`, `halfMoveClock`, and `fullMoveNumber` variables
     }
-    private int getPieceResourceId(char piece) {
-        // Map FEN characters to piece resource IDs
-        switch (piece) {
-            case 'r':
-                return R.drawable.br;
-            case 'n':
-                return R.drawable.bn;
-            case 'b':
-                return R.drawable.bb;
-            case 'q':
-                return R.drawable.bq;
-            case 'k':
-                return R.drawable.bk;
-            case 'p':
-                return R.drawable.bp;
-            case 'R':
-                return R.drawable.wr;
-            case 'N':
-                return R.drawable.wn;
-            case 'B':
-                return R.drawable.wb;
-            case 'Q':
-                return R.drawable.wq;
-            case 'K':
-                return R.drawable.wk;
 
-            case 'P':
-                return R.drawable.wp;
-            default:
-                return 0; // Return 0 for an unknown piece
-        }
+    private ImageView createChessboardSquare(boolean isWhite) {
+        ImageView square = new ImageView(this);
+        square.setBackgroundColor(isWhite ? Color.TRANSPARENT : Color.parseColor("#6ac3bd"));
+
+        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+        layoutParams.width = 0;
+        layoutParams.height = 0;
+        layoutParams.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+        layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+        square.setLayoutParams(layoutParams);
+
+        return square;
+    }
+
+    private int getPieceResourceId(char piece) {
+        Map<Character, Integer> pieceResourceMap = new HashMap<>();
+        pieceResourceMap.put('r', R.drawable.br);
+        pieceResourceMap.put('n', R.drawable.bn);
+        pieceResourceMap.put('b', R.drawable.bb);
+        pieceResourceMap.put('q', R.drawable.bq);
+        pieceResourceMap.put('k', R.drawable.bk);
+        pieceResourceMap.put('p', R.drawable.bp);
+        pieceResourceMap.put('R', R.drawable.wr);
+        pieceResourceMap.put('N', R.drawable.wn);
+        pieceResourceMap.put('B', R.drawable.wb);
+        pieceResourceMap.put('Q', R.drawable.wq);
+        pieceResourceMap.put('K', R.drawable.wk);
+        pieceResourceMap.put('P', R.drawable.wp);
+
+        return pieceResourceMap.getOrDefault(piece, 0);
     }
 
     private String getBoardPositionFromRowCol(int row, int col) {
-        row = isBlack ? 7 - row : row; // Flip row if playing as black
+        if (isBlack) {
+            row = 7 - row; // Flip row if playing as black
+        }
 
+        char file = (char) ('a' + col);
+        int rank = 8 - row;
 
-        String[] cols = {"a", "b", "c", "d", "e", "f", "g", "h"};
-        String[] rows = {"8", "7", "6", "5", "4", "3", "2", "1"};
-        return cols[col] + rows[row];
+        return Character.toString(file) + rank;
     }
+
+    private void disableOnClickListeners() {
+        for (View view : chessboard.getTouchables()) {
+            view.setOnClickListener(null);
+        }
+    }
+
 
     // Game End
     private boolean isCheckmate() {
@@ -378,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isDraw() {
         return board.isDraw();
     }
-
     private boolean isGameOver() {
         return isCheckmate() || isStalemate() || isDraw();
     }
@@ -408,20 +351,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                     reader.close();
 
-                    Log.d("LOG123", content.toString());
                     final String moveContent = content.toString();
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    runOnUiThread(() -> {
 
-                            board.doMove(moveContent);
+                        board.doMove(moveContent);
 
-                            // Update the FEN
-                            fen = board.getFen();
-                            setBoardPositionFromFEN(fen, isBlack);
-                            isPlayerTurn = !isPlayerTurn;
-                        }
+                        // Update the FEN
+                        fen = board.getFen();
+                        setBoardPositionFromFEN(fen, isBlack);
+                        isPlayerTurn = !isPlayerTurn;
                     });
 
                 } else {
@@ -438,97 +377,17 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(Void result) {
 
-            // Reset the onClickListeners
-            for (int i = 0; i < chessboard.getChildCount(); i++) {
-                ImageView square = (ImageView) chessboard.getChildAt(i);
-                square.setOnClickListener(v -> {
-                    // Get the row and column of the clicked square
-                    int row = 0;
-                    int col = 0;
-                    for (int i1 = 0; i1 < chessboard.getChildCount(); i1++) {
-                        if (chessboard.getChildAt(i1) == v) {
-                            row = i1 / 8;
-                            col = i1 % 8;
-                            break;
-                        }
-                    }
-
-                    // Get the piece on the clicked square
-                    String piece = getPieceFromBoardPosition(row, col);
-
-                    Log.d("LOG123", String.valueOf(piece.length()));
-                    if (!isPlayerTurn) {
-                        // Disable the OnClickListener for the chessboard squares
-                        for (int j = 0; j < chessboard.getChildCount(); j++) {
-                            ImageView rect = (ImageView) chessboard.getChildAt(j);
-                            rect.setOnClickListener(null);
-                        }
-
-                        // Execute the ComputerMoveTask if it's not the player's turn
-                        new ComputerMoveTask().execute();
-                    } else if (piece.length() > 0 && currentSelection.length() == 0) {
-                        if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
-                            Log.d("LOG123", "You clicked on a valid piece");
-
-                            // Store the current selection
-                            currentSelection = getBoardPositionFromRowCol(row, col);
-                        }
-                    } else if (currentSelection.length() > 0 && isPlayerTurn) {
-                        String move = currentSelection + getBoardPositionFromRowCol(row, col);
-
-                        // Check if the move is legal
-                        boolean isLegal = false;
-                        List<Move> moves = board.legalMoves();
-                        for (Move m : moves) {
-                            if (m.toString().equals(move)) {
-                                isLegal = true;
-                                break;
-                            }
-                        }
-
-                        if (isLegal) {
-                            // Make the move
-                            board.doMove(new Move(move, board.getSideToMove()));
-
-                            // Update the FEN
-                            fen = board.getFen();
-                            setBoardPositionFromFEN(fen, isBlack);
-                            isPlayerTurn = !isPlayerTurn;
-
-                            // Disable the OnClickListener for the chessboard squares
-                            for (int j = 0; j < chessboard.getChildCount(); j++) {
-                                ImageView rect = (ImageView) chessboard.getChildAt(j);
-                                rect.setOnClickListener(null);
-                            }
-
-                            // Execute the ComputerMoveTask if it's not the player's turn
-                            if (!isPlayerTurn) {
-                                new ComputerMoveTask().execute();
-                            }
-                        } else {
-                            Log.d("LOG123", "Illegal move " + move);
-                            // display all the list moves
-                            for (Move m : moves) {
-                                Log.d("LOG123", m.toString());
-                            }
-                        }
-                        currentSelection = "";
-                    }
-                });
-            }
+            setOnClickListeners();
 
 
         }
 
     }
 
-
-    //!TODO: methods to make
-    // TODO: Check for game ending
+    // TODO: make first move/game ending happen in the background
     // TODO: board mirrored on y axis for black
-    // TODO: isThreeFoldRepetition(String fen); #AMBITOUS AF
-    // TODO: isFiftyMoveRule(String fen); #AMBITOUS AF
-    // TODO: isInsufficientMaterial(String fen); #AMBITOUS AF
+
+
 
 }
 //!TODO IN COMPUTER SCREEN
@@ -542,3 +401,4 @@ public class MainActivity extends AppCompatActivity {
 //! TODO IN LOGIC SCREEN
 //! TODO IN HOME SCREEN
 //! TODO IN MULTIPLAYER SCREEN
+
