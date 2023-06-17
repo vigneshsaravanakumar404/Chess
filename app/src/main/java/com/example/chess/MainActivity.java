@@ -34,7 +34,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     // Variables
-    public static boolean isBlack = true;
+    public static boolean isBlack = false;
     public static boolean isPlayerTurn;
     public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static int level = 20;
@@ -48,13 +48,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         // Variables
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
         board = new Board();
 
-//
         // Initialize
         setChessboardDimensions();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -67,9 +65,6 @@ public class MainActivity extends AppCompatActivity {
         // Turn
         isPlayerTurn = !isBlack;
 
-        // Set onClickListeners to each square
-        // Set onClickListeners to each square
-        // Set onClickListeners to each square
         // Set onClickListeners to each square
         for (int i = 0; i < chessboard.getChildCount(); i++) {
             ImageView square = (ImageView) chessboard.getChildAt(i);
@@ -89,14 +84,15 @@ public class MainActivity extends AppCompatActivity {
                 String piece = getPieceFromBoardPosition(row, col);
 
                 Log.d("LOG123", String.valueOf(piece.length()));
-                if (isBlack && !isPlayerTurn) {
+                if (isGameOver()) {
+                    // code here
+                } else if (!isPlayerTurn) {
                     // Disable the OnClickListener for the chessboard squares
                     for (int j = 0; j < chessboard.getChildCount(); j++) {
                         ImageView rect = (ImageView) chessboard.getChildAt(j);
                         rect.setOnClickListener(null);
                     }
-
-                    // Execute the ComputerMoveTask if the player is white and it's their turn
+                    // Execute the ComputerMoveTask if it's not the player's turn
                     new ComputerMoveTask().execute();
                 } else if (piece.length() > 0 && currentSelection.length() == 0) {
                     if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
@@ -105,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         // Store the current selection
                         currentSelection = getBoardPositionFromRowCol(row, col);
                     }
-                } else if (currentSelection.length() > 0 && isPlayerTurn) {
+                } else if (currentSelection.length() > 0) {
                     String move = currentSelection + getBoardPositionFromRowCol(row, col);
 
                     // Check if the move is legal
@@ -133,12 +129,12 @@ public class MainActivity extends AppCompatActivity {
                             rect.setOnClickListener(null);
                         }
 
-                        // Execute the ComputerMoveTask if the player is white and it's their turn
-                        if (!isPlayerTurn && !isBlack) {
+                        // Execute the ComputerMoveTask if it's not the player's turn
+                        if (!isPlayerTurn) {
                             new ComputerMoveTask().execute();
                         }
                     } else {
-                        Log.d("LOG123", "Illegal move");
+                        Log.d("LOG123", "Illegal move " + move);
                         // display all the list moves
                         for (Move m : moves) {
                             Log.d("LOG123", m.toString());
@@ -370,6 +366,23 @@ public class MainActivity extends AppCompatActivity {
         return cols[col] + rows[row];
     }
 
+    // Game End
+    private boolean isCheckmate() {
+        return board.isMated();
+    }
+
+    private boolean isStalemate() {
+        return board.isStaleMate();
+    }
+
+    private boolean isDraw() {
+        return board.isDraw();
+    }
+
+    private boolean isGameOver() {
+        return isCheckmate() || isStalemate() || isDraw();
+    }
+
     // ComputerMoveTask
     private class ComputerMoveTask extends AsyncTask<Void, Void, Void> {
         @Override
@@ -426,11 +439,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
 
             // Reset the onClickListeners
-            // Set onClickListeners to each square
-            // Set onClickListeners to each square
-            // Set onClickListeners to each square
-            // Set onClickListeners to each square
-            // Set onClickListeners to each square
             for (int i = 0; i < chessboard.getChildCount(); i++) {
                 ImageView square = (ImageView) chessboard.getChildAt(i);
                 square.setOnClickListener(v -> {
@@ -449,14 +457,14 @@ public class MainActivity extends AppCompatActivity {
                     String piece = getPieceFromBoardPosition(row, col);
 
                     Log.d("LOG123", String.valueOf(piece.length()));
-                    if (isBlack && !isPlayerTurn) {
+                    if (!isPlayerTurn) {
                         // Disable the OnClickListener for the chessboard squares
                         for (int j = 0; j < chessboard.getChildCount(); j++) {
                             ImageView rect = (ImageView) chessboard.getChildAt(j);
                             rect.setOnClickListener(null);
                         }
 
-                        // Execute the ComputerMoveTask if the player is white and it's their turn
+                        // Execute the ComputerMoveTask if it's not the player's turn
                         new ComputerMoveTask().execute();
                     } else if (piece.length() > 0 && currentSelection.length() == 0) {
                         if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
@@ -493,8 +501,8 @@ public class MainActivity extends AppCompatActivity {
                                 rect.setOnClickListener(null);
                             }
 
-                            // Execute the ComputerMoveTask if the player is white and it's their turn
-                            if (!isPlayerTurn && !isBlack) {
+                            // Execute the ComputerMoveTask if it's not the player's turn
+                            if (!isPlayerTurn) {
                                 new ComputerMoveTask().execute();
                             }
                         } else {
@@ -517,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
 
     //!TODO: methods to make
     // TODO: Check for game ending
+    // TODO: board mirrored on y axis for black
     // TODO: isThreeFoldRepetition(String fen); #AMBITOUS AF
     // TODO: isFiftyMoveRule(String fen); #AMBITOUS AF
     // TODO: isInsufficientMaterial(String fen); #AMBITOUS AF
@@ -533,10 +542,3 @@ public class MainActivity extends AppCompatActivity {
 //! TODO IN LOGIC SCREEN
 //! TODO IN HOME SCREEN
 //! TODO IN MULTIPLAYER SCREEN
-
-
-// background
-//        AnimationDrawable animationDrawable = (AnimationDrawable) mainLayout.getBackground();
-//        animationDrawable.setEnterFadeDuration(5000);
-//        animationDrawable.setExitFadeDuration(5000);
-//        animationDrawable.start();
