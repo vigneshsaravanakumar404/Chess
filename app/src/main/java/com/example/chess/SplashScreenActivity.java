@@ -29,6 +29,8 @@ import com.google.firebase.auth.FirebaseUser;
 public class SplashScreenActivity extends AppCompatActivity {
 
 
+    private static final int RC_SIGN_IN = 1;
+    private static final String TAG = "GOOGLE_SIGN_IN_TAG";
     TextView textView;
     ProgressBar progressBar;
     int duration = 500;
@@ -36,8 +38,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     long delay = (long) (duration / 100.0);
     Handler handler;
     Runnable runnable;
-    private static final int RC_SIGN_IN = 1;
-    private static final String TAG = "GOOGLE_SIGN_IN_TAG";
     GoogleSignInClient mGoogleSignInClient;
     ImageButton signIn;
     private FirebaseAuth mAuth;

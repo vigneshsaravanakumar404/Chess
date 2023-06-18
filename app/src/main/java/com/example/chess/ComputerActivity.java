@@ -1,6 +1,7 @@
 package com.example.chess;
 
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -28,7 +29,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
 import com.github.bhlangonijr.chesslib.Board;
@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class ComputerActivity extends AppCompatActivity {
@@ -54,7 +55,6 @@ public class ComputerActivity extends AppCompatActivity {
     public static String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static int level = 1;
     GridLayout chessboard;
-    ConstraintLayout mainLayout;
     String currentSelection = "";
     Board board;
     TextView computerName, playerName;
@@ -69,7 +69,6 @@ public class ComputerActivity extends AppCompatActivity {
         // Variables
 
         chessboard = findViewById(R.id.chessboard);
-        mainLayout = findViewById(R.id.mainLayout);
         computerName = findViewById(R.id.computerName);
         playerName = findViewById(R.id.playerName);
         playerIcon = findViewById(R.id.playerIcon);
@@ -94,7 +93,7 @@ public class ComputerActivity extends AppCompatActivity {
         // Get user's name from firebase authentication and set it to the textview
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        String userName = firebaseUser.getDisplayName();
+        String userName = Objects.requireNonNull(firebaseUser).getDisplayName();
         playerName.setText(userName);
         Uri profilePictureUri = firebaseUser.getPhotoUrl();
         if (profilePictureUri != null) {
@@ -114,6 +113,7 @@ public class ComputerActivity extends AppCompatActivity {
         layoutParams.height = screenWidth;
         chessboard.setLayoutParams(layoutParams);
     }
+
     private void createSquares(boolean isWhiteAtBottom) {
         boolean isWhite = isWhiteAtBottom;
 
@@ -133,6 +133,7 @@ public class ComputerActivity extends AppCompatActivity {
             isWhite = !isWhite;
         }
     }
+
     private void setOnClickListeners() {
         for (int i = 0; i < chessboard.getChildCount(); i++) {
             ImageView square = (ImageView) chessboard.getChildAt(i);
@@ -179,10 +180,12 @@ public class ComputerActivity extends AppCompatActivity {
             });
         }
     }
+
     private boolean isMoveLegal(String move) {
         List<Move> moves = board.legalMoves();
         return moves.stream().anyMatch(m -> m.toString().equals(move));
     }
+
     private void makeMove(String move) {
         board.doMove(new Move(move, board.getSideToMove()));
         fen = board.getFen();
@@ -246,6 +249,7 @@ public class ComputerActivity extends AppCompatActivity {
         }
         return "";
     }
+
     private void setBoardPositionFromFEN(String fen, boolean isWhiteAtBottom) {
         // Split the FEN string into separate parts
         String[] fenParts = fen.split(" ");
@@ -287,6 +291,7 @@ public class ComputerActivity extends AppCompatActivity {
             isWhite = !isWhite; // Toggle color at the end of each row
         }
     }
+
     private ImageView createChessboardSquare(boolean isWhite) {
         ImageView square = new ImageView(this);
         square.setBackgroundColor(isWhite ? Color.TRANSPARENT : Color.parseColor("#6ac3bd"));
@@ -300,6 +305,7 @@ public class ComputerActivity extends AppCompatActivity {
 
         return square;
     }
+
     private int getPieceResourceId(char piece) {
         Map<Character, Integer> pieceResourceMap = new HashMap<>();
         pieceResourceMap.put('r', R.drawable.br);
@@ -315,8 +321,10 @@ public class ComputerActivity extends AppCompatActivity {
         pieceResourceMap.put('K', R.drawable.wk);
         pieceResourceMap.put('P', R.drawable.wp);
 
+        //noinspection ConstantConditions
         return pieceResourceMap.getOrDefault(piece, 0);
     }
+
     private String getBoardPositionFromRowCol(int row, int col) {
         if (isBlack) {
             row = 7 - row; // Flip row if playing as black
@@ -327,6 +335,7 @@ public class ComputerActivity extends AppCompatActivity {
 
         return Character.toString(file) + rank;
     }
+
     private void disableOnClickListeners() {
         for (View view : chessboard.getTouchables()) {
             view.setOnClickListener(null);
@@ -338,17 +347,21 @@ public class ComputerActivity extends AppCompatActivity {
     private boolean isCheckmate() {
         return board.isMated();
     }
+
     private boolean isStalemate() {
         return board.isStaleMate();
     }
+
     private boolean isDraw() {
         return board.isDraw();
     }
+
     private boolean isGameOver() {
         return isCheckmate() || isStalemate() || isDraw();
     }
 
     // ComputerMoveTask
+    @SuppressLint("StaticFieldLeak")
     private class ComputerMoveTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -486,7 +499,6 @@ public class ComputerActivity extends AppCompatActivity {
 
     // TODO: make first move/game ending happen in the background
     // TODO: board mirrored on y axis for black
-
 
 
 }
