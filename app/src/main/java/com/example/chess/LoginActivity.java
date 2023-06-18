@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login);
 
         //! Skip authentication for now
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, ComputerActivity.class);
         startActivity(intent);
 
         // Google Authentication
@@ -78,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Log.d(TAG, "signInWithCredential: success");
                     FirebaseUser user = mAuth.getCurrentUser();
-                    Intent mainActivity = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent mainActivity = new Intent(LoginActivity.this, ComputerActivity.class);
                     startActivity(mainActivity);
                     Log.d(TAG, "onComplete: " + user.getEmail());
                 } else {

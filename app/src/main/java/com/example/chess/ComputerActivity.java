@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity {
+public class ComputerActivity extends AppCompatActivity {
 
     // Variables
     public static boolean isBlack = false;
@@ -44,15 +45,23 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout mainLayout;
     String currentSelection = "";
     Board board;
+    ImageView computerIcon;
+    Bitmap bitmap;
+    Drawable scaledComputerIcon;
+    TextView computerName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_computer);
 
         // Variables
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.computericon);
+        scaledComputerIcon = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 350, 350, true));
+        computerIcon = findViewById(R.id.computerIcon);
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
+        computerName = findViewById(R.id.computerName);
         board = new Board();
 
         // Initialize
@@ -60,12 +69,14 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         createSquares(isBlack);
+        computerIcon.setImageDrawable(scaledComputerIcon);
+        computerName.setText("Stockfish Level " + level);
         setBoardPositionFromFEN(fen, isBlack);
         isPlayerTurn = !isBlack;
 
+
         // Set onClickListeners to each square
         setOnClickListeners();
-
 
     }
 
@@ -98,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
             isWhite = !isWhite;
         }
     }
-
     private void setOnClickListeners() {
         for (int i = 0; i < chessboard.getChildCount(); i++) {
             ImageView square = (ImageView) chessboard.getChildAt(i);
@@ -128,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                             new ComputerMoveTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "Illegal move!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ComputerActivity.this, "Illegal move!", Toast.LENGTH_SHORT).show();
                     }
                     currentSelection = "";
                 }
@@ -136,21 +146,19 @@ public class MainActivity extends AppCompatActivity {
                 if (isGameOver()) {
                     Log.d("GAME OVER", "GAME OVER");
                     if (isCheckmate()) {
-                        Toast.makeText(MainActivity.this, "Checkmate!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ComputerActivity.this, "Checkmate!", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(MainActivity.this, "Stalemate!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ComputerActivity.this, "Stalemate!", Toast.LENGTH_SHORT).show();
                     }
                     disableOnClickListeners();
                 }
             });
         }
     }
-
     private boolean isMoveLegal(String move) {
         List<Move> moves = board.legalMoves();
         return moves.stream().anyMatch(m -> m.toString().equals(move));
     }
-
     private void makeMove(String move) {
         board.doMove(new Move(move, board.getSideToMove()));
         fen = board.getFen();
@@ -214,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return "";
     }
-
     private void setBoardPositionFromFEN(String fen, boolean isWhiteAtBottom) {
         // Split the FEN string into separate parts
         String[] fenParts = fen.split(" ");
@@ -231,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
         for (int row = 0; row < 8; row++) {
             String fenRow = isWhiteAtBottom ? positionRows[7 - row] : positionRows[row];
 
-            int col = 0;
 
             for (char c : fenRow.toCharArray()) {
                 if (Character.isDigit(c)) {
@@ -242,7 +248,6 @@ public class MainActivity extends AppCompatActivity {
                         ImageView square = createChessboardSquare(isWhite);
                         chessboard.addView(square);
 
-                        col++;
                         isWhite = !isWhite; // Toggle color
                     }
                 } else {
@@ -252,14 +257,12 @@ public class MainActivity extends AppCompatActivity {
                     square.setImageResource(pieceResourceId);
                     chessboard.addView(square);
 
-                    col++;
                     isWhite = !isWhite; // Toggle color
                 }
             }
             isWhite = !isWhite; // Toggle color at the end of each row
         }
     }
-
     private ImageView createChessboardSquare(boolean isWhite) {
         ImageView square = new ImageView(this);
         square.setBackgroundColor(isWhite ? Color.TRANSPARENT : Color.parseColor("#6ac3bd"));
@@ -273,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
 
         return square;
     }
-
     private int getPieceResourceId(char piece) {
         Map<Character, Integer> pieceResourceMap = new HashMap<>();
         pieceResourceMap.put('r', R.drawable.br);
@@ -291,7 +293,6 @@ public class MainActivity extends AppCompatActivity {
 
         return pieceResourceMap.getOrDefault(piece, 0);
     }
-
     private String getBoardPositionFromRowCol(int row, int col) {
         if (isBlack) {
             row = 7 - row; // Flip row if playing as black
@@ -302,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
 
         return Character.toString(file) + rank;
     }
-
     private void disableOnClickListeners() {
         for (View view : chessboard.getTouchables()) {
             view.setOnClickListener(null);
@@ -314,11 +314,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isCheckmate() {
         return board.isMated();
     }
-
     private boolean isStalemate() {
         return board.isStaleMate();
     }
-
     private boolean isDraw() {
         return board.isDraw();
     }
@@ -390,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+
 //!TODO IN COMPUTER SCREEN
 // TODO: check checkmate
 // TODO: check stalemate
