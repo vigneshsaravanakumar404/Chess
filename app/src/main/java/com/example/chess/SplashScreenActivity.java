@@ -33,6 +33,10 @@ public class SplashScreenActivity extends AppCompatActivity {
         progressBar.setVisibility(ProgressBar.VISIBLE);
 
 
+        // Make the activity full screen
+        getWindow().getDecorView().setSystemUiVisibility(5894);
+
+
         runnable = new Runnable() {
             @Override
             public void run() {
@@ -58,7 +62,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         getWindow().getDecorView().setBackgroundColor(0xFF00FF00);
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(50000);
                 startActivity(new Intent(getApplicationContext(), LoginActivity.class));
             } catch (InterruptedException e) {
                 e.printStackTrace();
