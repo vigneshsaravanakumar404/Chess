@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login);
 
         //! Skip authentication for now
-        Intent intent = new Intent(this, ComputerActivity.class);
+        Intent intent = new Intent(this, ComputerSettingsActivity.class);
         startActivity(intent);
 
         // Google Authentication
