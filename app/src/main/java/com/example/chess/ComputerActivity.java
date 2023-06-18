@@ -329,7 +329,7 @@ public class ComputerActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            String url = "https://6f19-173-63-234-100.ngrok-free.app/engine/level/?fen=" + fen + "&skill-level=" + level;
+            String url = "https://731d-173-63-234-100.ngrok-free.app//engine/level/?fen=" + fen + "&skill-level=" + level;
             String headerKey = "ngrok-skip-browser-warning";
             String headerValue = "true";
 
