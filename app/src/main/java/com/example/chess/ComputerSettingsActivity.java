@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -11,13 +12,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ComputerSettingsActivity extends AppCompatActivity {
 
-
     SeekBar seekBar;
     ImageView engineIcon;
     TextView name;
-    int[] engineIcons = new int[20];
+    int[] engineIcons;
     Button play;
-
+    RadioButton white;
+    RadioButton black;
+    RadioButton random;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,12 @@ public class ComputerSettingsActivity extends AppCompatActivity {
         engineIcon = findViewById(R.id.engineIcon);
         engineIcons = new int[]{R.drawable.one, R.drawable.two, R.drawable.three, R.drawable.four, R.drawable.five, R.drawable.six, R.drawable.seven, R.drawable.eight, R.drawable.nine, R.drawable.ten, R.drawable.eleven, R.drawable.twelve, R.drawable.thirteen, R.drawable.fourteen, R.drawable.fifteen, R.drawable.sixteen, R.drawable.seventeen, R.drawable.eighteen, R.drawable.nineteen, R.drawable.twenty};
         play = findViewById(R.id.play);
+        white = findViewById(R.id.white);
+        black = findViewById(R.id.black);
+        random = findViewById(R.id.random);
 
+        // Initialization
+        random.setChecked(true);
         name.setText("Stockfish 10");
         engineIcon.setImageResource(engineIcons[9]);
         engineIcon.getLayoutParams().height = 500;
@@ -40,14 +47,10 @@ public class ComputerSettingsActivity extends AppCompatActivity {
         seekBar.setMin(1);
         seekBar.setProgress(10);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progressChangedValue = 10;
-
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progressChangedValue = progress;
-                ComputerActivity.level = progressChangedValue;
-                name.setText("Stockfish " + progressChangedValue);
-                engineIcon.setImageResource(engineIcons[progressChangedValue - 1]);
-
+                ComputerActivity.level = progress;
+                name.setText("Stockfish " + progress);
+                engineIcon.setImageResource(engineIcons[progress - 1]);
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -55,16 +58,33 @@ public class ComputerSettingsActivity extends AppCompatActivity {
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                // TODO Auto-generated method stub
             }
+        });
+
+        // Radio Buttons
+        white.setOnClickListener(v -> {
+            white.setChecked(true);
+            black.setChecked(false);
+            random.setChecked(false);
+        });
+        black.setOnClickListener(v -> {
+            white.setChecked(false);
+            black.setChecked(true);
+            random.setChecked(false);
+        });
+        random.setOnClickListener(v -> {
+            white.setChecked(false);
+            black.setChecked(false);
+            random.setChecked(true);
         });
 
         play.setOnClickListener(v -> {
             ComputerActivity.level = seekBar.getProgress();
             ComputerActivity.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            ComputerActivity.isBlack = black.isChecked() || (!white.isChecked() && Math.random() < 0.5);
             startActivity(new Intent(this, ComputerActivity.class));
         });
-
-
     }
+
 }

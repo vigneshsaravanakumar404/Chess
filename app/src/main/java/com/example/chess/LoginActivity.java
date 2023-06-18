@@ -79,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Log.d(TAG, "signInWithCredential: success");
                     FirebaseUser user = mAuth.getCurrentUser();
-                    Intent mainActivity = new Intent(LoginActivity.this, ComputerActivity.class);
+                    Intent mainActivity = new Intent(LoginActivity.this, ComputerSettingsActivity.class);
                     startActivity(mainActivity);
                     Log.d(TAG, "onComplete: " + user.getEmail());
                 } else {

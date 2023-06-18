@@ -48,6 +48,36 @@
         android:text="Play"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/level" />
+        app:layout_constraintTop_toBottomOf="@+id/level"
+        app:layout_constraintVertical_bias="0.348" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play">
+
+        <RadioButton
+            android:id="@+id/white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="White" />
+
+        <RadioButton
+            android:id="@+id/random"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Random" />
+
+        <RadioButton
+            android:id="@+id/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Black" />
+    </RadioGroup>
 </androidx.constraintlayout.widget.ConstraintLayout>
