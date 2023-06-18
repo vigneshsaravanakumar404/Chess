@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
@@ -58,6 +59,7 @@ public class ComputerActivity extends AppCompatActivity {
     Board board;
     TextView computerName, playerName;
     ImageView playerIcon;
+    CardView cardView, cardView2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,8 @@ public class ComputerActivity extends AppCompatActivity {
         computerName = findViewById(R.id.computerName);
         playerName = findViewById(R.id.playerName);
         playerIcon = findViewById(R.id.playerIcon);
+        cardView = findViewById(R.id.cardView);
+        cardView2 = findViewById(R.id.cardView2);
         board = new Board();
 
         // Initialize
@@ -81,7 +85,8 @@ public class ComputerActivity extends AppCompatActivity {
         computerName.setText("Stockfish Level " + level);
         setBoardPositionFromFEN(fen, isBlack);
         isPlayerTurn = !isBlack;
-
+        cardView.setCardElevation(10000f);
+        cardView2.setCardElevation(10000f);
 
         // Set onClickListeners to each square
         setOnClickListeners();
@@ -96,7 +101,6 @@ public class ComputerActivity extends AppCompatActivity {
             ImageView playerIcon = findViewById(R.id.playerIcon);
             Glide.with(this).load(profilePictureUri).into(playerIcon);
         }
-
 
     }
 

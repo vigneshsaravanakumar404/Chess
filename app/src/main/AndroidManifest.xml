@@ -30,9 +30,6 @@
         <activity
             android:name=".ComputerActivity"
             android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false"></activity>
     </application>
 
 </manifest>
