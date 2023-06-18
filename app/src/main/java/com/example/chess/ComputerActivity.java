@@ -412,7 +412,7 @@ public class ComputerActivity extends AppCompatActivity {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(ComputerActivity.this);
 
-// Set the dialog title
+                            // Set the dialog title
                             TextView dialogTitle = new TextView(ComputerActivity.this);
                             dialogTitle.setText("Game Result");
                             dialogTitle.setTextSize(20);
@@ -420,7 +420,7 @@ public class ComputerActivity extends AppCompatActivity {
                             dialogTitle.setGravity(Gravity.CENTER);
                             dialogTitle.setPadding(0, 0, 0, 16);
 
-// Set the dialog message
+                            // Set the dialog message
                             TextView dialogMessage = new TextView(ComputerActivity.this);
                             dialogMessage.setText(gameResult);
                             dialogMessage.setTextSize(16);
