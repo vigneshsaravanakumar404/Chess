@@ -4,7 +4,9 @@ package com.example.chess;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "GOOGLE_SIGN_IN_TAG";
     GoogleSignInClient mGoogleSignInClient;
-    Button signIn;
+    ImageButton signIn;
     private FirebaseAuth mAuth;
 
     @Override
@@ -35,11 +37,27 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
+        signIn = findViewById(R.id.signIn);
+
+        // Increase the size
+        ScaleAnimation enlargeAnimation = new ScaleAnimation(
+                1f, 1.2f, 1f, 1.2f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f
+        );
+        enlargeAnimation.setRepeatCount(Animation.INFINITE);
+        enlargeAnimation.setRepeatMode(Animation.REVERSE);
+        enlargeAnimation.setDuration(1000);
+
+        // Apply the animation to the button
+        signIn.startAnimation(enlargeAnimation);
+        signIn.setBackground(null);
+
         // Make the activity full screen
         getWindow().getDecorView().setSystemUiVisibility(5894);
+        signIn.setBackgroundResource(0);
 
         // Google Authentication
-        signIn = findViewById(R.id.signIn);
         mAuth = FirebaseAuth.getInstance();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);

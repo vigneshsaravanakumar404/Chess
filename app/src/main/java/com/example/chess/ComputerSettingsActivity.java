@@ -37,6 +37,7 @@ public class ComputerSettingsActivity extends AppCompatActivity {
         random = findViewById(R.id.random);
 
         // Initialization
+        getWindow().getDecorView().setSystemUiVisibility(5894);
         random.setChecked(true);
         name.setText("Stockfish 10");
         engineIcon.setImageResource(engineIcons[9]);

@@ -1,28 +1,39 @@
 package com.example.chess;
 
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.bumptech.glide.Glide;
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.move.Move;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,10 +56,8 @@ public class ComputerActivity extends AppCompatActivity {
     ConstraintLayout mainLayout;
     String currentSelection = "";
     Board board;
-    ImageView computerIcon;
-    Bitmap bitmap;
-    Drawable scaledComputerIcon;
-    TextView computerName;
+    TextView computerName, playerName;
+    ImageView playerIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +65,12 @@ public class ComputerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_computer);
 
         // Variables
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.computericon);
-        scaledComputerIcon = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 350, 350, true));
-        computerIcon = findViewById(R.id.computerIcon);
+
         chessboard = findViewById(R.id.chessboard);
         mainLayout = findViewById(R.id.mainLayout);
         computerName = findViewById(R.id.computerName);
+        playerName = findViewById(R.id.playerName);
+        playerIcon = findViewById(R.id.playerIcon);
         board = new Board();
 
         // Initialize
@@ -69,7 +78,6 @@ public class ComputerActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         createSquares(isBlack);
-        computerIcon.setImageDrawable(scaledComputerIcon);
         computerName.setText("Stockfish Level " + level);
         setBoardPositionFromFEN(fen, isBlack);
         isPlayerTurn = !isBlack;
@@ -77,6 +85,18 @@ public class ComputerActivity extends AppCompatActivity {
 
         // Set onClickListeners to each square
         setOnClickListeners();
+
+        // Get user's name from firebase authentication and set it to the textview
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        String userName = firebaseUser.getDisplayName();
+        playerName.setText(userName);
+        Uri profilePictureUri = firebaseUser.getPhotoUrl();
+        if (profilePictureUri != null) {
+            ImageView playerIcon = findViewById(R.id.playerIcon);
+            Glide.with(this).load(profilePictureUri).into(playerIcon);
+        }
+
 
     }
 
@@ -329,7 +349,7 @@ public class ComputerActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            String url = "https://731d-173-63-234-100.ngrok-free.app//engine/level/?fen=" + fen + "&skill-level=" + level;
+            String url = "https://5024-173-63-234-100.ngrok-free.app/engine/level/?fen=" + fen + "&skill-level=" + level;
             String headerKey = "ngrok-skip-browser-warning";
             String headerValue = "true";
 
@@ -359,6 +379,84 @@ public class ComputerActivity extends AppCompatActivity {
                         fen = board.getFen();
                         setBoardPositionFromFEN(fen, isBlack);
                         isPlayerTurn = !isPlayerTurn;
+
+
+                        // Check for game end
+                        if (isGameOver()) {
+                            String gameResult = "";
+
+                            if (isCheckmate()) {
+                                gameResult = "Checkmate!";
+                            } else if (isStalemate()) {
+                                gameResult = "Stalemate!";
+                            } else if (isDraw()) {
+                                gameResult = "Draw!";
+                            }
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ComputerActivity.this);
+
+// Set the dialog title
+                            TextView dialogTitle = new TextView(ComputerActivity.this);
+                            dialogTitle.setText("Game Result");
+                            dialogTitle.setTextSize(20);
+                            dialogTitle.setTextColor(Color.parseColor("#2eaf9b"));
+                            dialogTitle.setGravity(Gravity.CENTER);
+                            dialogTitle.setPadding(0, 0, 0, 16);
+
+// Set the dialog message
+                            TextView dialogMessage = new TextView(ComputerActivity.this);
+                            dialogMessage.setText(gameResult);
+                            dialogMessage.setTextSize(16);
+                            dialogMessage.setTextColor(Color.parseColor("#0892b9"));
+                            dialogMessage.setGravity(Gravity.CENTER);
+                            dialogMessage.setPadding(0, 0, 0, 24);
+
+                            LinearLayout layout = new LinearLayout(ComputerActivity.this);
+                            layout.setOrientation(LinearLayout.VERTICAL);
+                            layout.addView(dialogTitle);
+                            layout.addView(dialogMessage);
+
+                            // Add the image of a king to the dialog box
+                            ImageView kingImage = new ImageView(ComputerActivity.this);
+                            kingImage.setImageResource(R.drawable.wk);
+                            kingImage.setPadding(0, 0, 0, 24);
+
+                            // use the chessboard to check which color won
+                            if (isBlack) {
+                                kingImage.setImageResource(R.drawable.wk);
+                            } else {
+                                kingImage.setImageResource(R.drawable.bk);
+                            }
+                            // Add king to the dialog box
+                            layout.addView(kingImage);
+
+                            builder.setView(layout)
+                                    .setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // Perform any actions needed after the user closes the dialog
+                                            disableOnClickListeners();
+                                            startActivity(new Intent(ComputerActivity.this, ComputerSettingsActivity.class));
+                                            finish();
+                                        }
+                                    })
+                                    .setCancelable(false);
+
+                            AlertDialog dialog = builder.create();
+
+                            // Customize the dialog window background
+                            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#31ccd0")));
+
+                            // Customize the button text color
+                            dialog.setOnShowListener(dialog1 -> {
+                                Button positiveButton = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+                                positiveButton.setTextColor(Color.WHITE);
+                            });
+
+                            dialog.show();
+
+
+                        }
+
                     });
 
                 } else {
