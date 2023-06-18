@@ -35,9 +35,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        //! Skip authentication for now
-        Intent intent = new Intent(this, ComputerSettingsActivity.class);
-        startActivity(intent);
+        // Make the activity full screen
+        getWindow().getDecorView().setSystemUiVisibility(5894);
 
         // Google Authentication
         signIn = findViewById(R.id.signIn);
@@ -48,6 +47,13 @@ public class LoginActivity extends AppCompatActivity {
             Intent signInIntent = mGoogleSignInClient.getSignInIntent();
             startActivityForResult(signInIntent, RC_SIGN_IN);
         });
+
+        // Change the sign in button to #rgb(49,175,147)
+        signIn.setBackgroundColor(0xFF31AF93);
+
+
+        // round the corners of the sign in button
+        signIn.setClipToOutline(true);
 
 
     }

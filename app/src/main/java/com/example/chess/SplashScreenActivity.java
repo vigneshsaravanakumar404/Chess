@@ -62,13 +62,14 @@ public class SplashScreenActivity extends AppCompatActivity {
         getWindow().getDecorView().setBackgroundColor(0xFF00FF00);
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(50000);
+                Thread.sleep(2000);
                 startActivity(new Intent(getApplicationContext(), LoginActivity.class));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
         thread.start();
+
 
     }
 }
