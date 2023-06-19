@@ -34,7 +34,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private static final String TAG = "GOOGLE_SIGN_IN_TAG";
     TextView byline;
     ProgressBar progressBar;
-    int duration = 500;
+    int duration = 2000;
     int incrementStep = 1;
     long delay = (long) (duration / 100.0);
     Handler handler;
@@ -59,11 +59,12 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         // Make the activity full screen
         getWindow().getDecorView().setSystemUiVisibility(5894);
+        getWindow().getDecorView().setBackgroundColor(0xFF00FF00);
         handler.postDelayed(runnable, delay);
         byline.setText("Chess\nBy: Vignesh");
         byline.setGravity(1);
         byline.setTextColor(Color.parseColor("#52ae7d"));
-        getWindow().getDecorView().setBackgroundColor(0xFF00FF00);
+
 
 
         // make the bar's color #3EB489
@@ -108,7 +109,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     );
                     enlargeAnimation.setRepeatCount(Animation.INFINITE);
                     enlargeAnimation.setRepeatMode(Animation.REVERSE);
-                    enlargeAnimation.setDuration(1000);
+                    enlargeAnimation.setDuration(duration);
 
                     // Apply the animation to the button
                     signIn.startAnimation(enlargeAnimation);

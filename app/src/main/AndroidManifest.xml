@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Chess"
+
         tools:targetApi="31">
         <activity
             android:name=".StatisticsActivity"
@@ -31,5 +32,6 @@
             android:name=".ComputerActivity"
             android:exported="false" />
     </application>
+
 
 </manifest>

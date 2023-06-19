@@ -22,10 +22,6 @@ public class SquareView extends View {
         squareColor = Color.TRANSPARENT; // Default color is transparent
     }
 
-    public void setColor(int color) {
-        squareColor = color;
-        invalidate(); // Request a redraw with the new color
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {

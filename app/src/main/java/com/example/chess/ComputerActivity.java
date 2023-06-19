@@ -150,6 +150,7 @@ public class ComputerActivity extends AppCompatActivity {
                 int row = position / 8;
                 int col = position % 8;
 
+
                 String piece = getPieceFromBoardPosition(row, col);
 
                 if (!isPlayerTurn) {
@@ -158,6 +159,8 @@ public class ComputerActivity extends AppCompatActivity {
                 } else if (piece.length() > 0 && currentSelection.isEmpty()) {
                     if ((!isBlack && Character.isUpperCase(piece.charAt(0))) || (isBlack && Character.isLowerCase(piece.charAt(0)) && piece.charAt(0) != '0')) {
                         currentSelection = getBoardPositionFromRowCol(row, col);
+
+
                     }
                 } else if (!currentSelection.isEmpty()) {
                     String move = currentSelection + getBoardPositionFromRowCol(row, col);
@@ -226,7 +229,6 @@ public class ComputerActivity extends AppCompatActivity {
                         // File doesn't exist, create a new one with the initial data
                         List<String> dataList = new ArrayList<>();
                         dataList.add("0 + " + finalGameResult + " + " + level);
-                        dataList.add("Initial Data 2");
 
                         // Convert the initial data list to a string
                         String initialData = TextUtils.join("\n", dataList);
@@ -495,7 +497,7 @@ public class ComputerActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            String url = "https://5024-173-63-234-100.ngrok-free.app/engine/level/?fen=" + fen + "&skill-level=" + level;
+            String url = "https://ccd3-50-206-77-180.ngrok-free.app/engine/level/?fen=" + fen + "&skill-level=" + level;
             String headerKey = "ngrok-skip-browser-warning";
             String headerValue = "true";
 
