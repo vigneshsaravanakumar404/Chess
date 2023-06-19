@@ -169,13 +169,78 @@ public class ComputerActivity extends AppCompatActivity {
                 }
 
                 if (isGameOver()) {
-                    Log.d("GAME OVER", "GAME OVER");
+                    String gameResult = "";
+
                     if (isCheckmate()) {
-                        Toast.makeText(ComputerActivity.this, "Checkmate!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ComputerActivity.this, "Stalemate!", Toast.LENGTH_SHORT).show();
+                        gameResult = "Checkmate!";
+                    } else if (isStalemate()) {
+                        gameResult = "Stalemate!";
+                    } else if (isDraw()) {
+                        gameResult = "Draw!";
                     }
-                    disableOnClickListeners();
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ComputerActivity.this);
+
+                    // Set the dialog title
+                    TextView dialogTitle = new TextView(ComputerActivity.this);
+                    dialogTitle.setText("Game Result");
+                    dialogTitle.setTextSize(20);
+                    dialogTitle.setTextColor(Color.parseColor("#2eaf9b"));
+                    dialogTitle.setGravity(Gravity.CENTER);
+                    dialogTitle.setPadding(0, 0, 0, 16);
+
+                    // Set the dialog message
+                    TextView dialogMessage = new TextView(ComputerActivity.this);
+                    dialogMessage.setText(gameResult);
+                    dialogMessage.setTextSize(16);
+                    dialogMessage.setTextColor(Color.parseColor("#0892b9"));
+                    dialogMessage.setGravity(Gravity.CENTER);
+                    dialogMessage.setPadding(0, 0, 0, 24);
+
+                    LinearLayout layout = new LinearLayout(ComputerActivity.this);
+                    layout.setOrientation(LinearLayout.VERTICAL);
+                    layout.addView(dialogTitle);
+                    layout.addView(dialogMessage);
+
+                    // Add the image of a king to the dialog box
+                    ImageView kingImage = new ImageView(ComputerActivity.this);
+                    kingImage.setImageResource(R.drawable.wk);
+                    kingImage.setPadding(0, 0, 0, 24);
+
+                    // use the chessboard to check which color won
+                    if (isBlack) {
+                        kingImage.setImageResource(R.drawable.wk);
+                    } else {
+                        kingImage.setImageResource(R.drawable.bk);
+                    }
+                    // Add king to the dialog box
+                    layout.addView(kingImage);
+
+                    builder.setView(layout)
+                            .setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Perform any actions needed after the user closes the dialog
+                                    disableOnClickListeners();
+                                    startActivity(new Intent(ComputerActivity.this, ComputerSettingsActivity.class));
+                                    finish();
+                                }
+                            })
+                            .setCancelable(false);
+
+                    AlertDialog dialog = builder.create();
+
+                    // Customize the dialog window background
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#31ccd0")));
+
+                    // Customize the button text color
+                    dialog.setOnShowListener(dialog1 -> {
+                        Button positiveButton = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+                        positiveButton.setTextColor(Color.WHITE);
+                    });
+
+                    dialog.show();
+
+
                 }
             });
         }
@@ -497,21 +562,4 @@ public class ComputerActivity extends AppCompatActivity {
 
     }
 
-    // TODO: make first move/game ending happen in the background
-    // TODO: board mirrored on y axis for black
-
-
 }
-
-//!TODO IN COMPUTER SCREEN
-// TODO: check checkmate
-// TODO: check stalemate
-// TODO: check draw
-// TODO: Update statistics
-// TODO: Update game history
-
-//! TODO IN SPLASH SCREEN
-//! TODO IN LOGIC SCREEN
-//! TODO IN HOME SCREEN
-//! TODO IN MULTIPLAYER SCREEN
-
