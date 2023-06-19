@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -35,12 +36,16 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,13 +66,15 @@ public class ComputerActivity extends AppCompatActivity {
     ImageView playerIcon;
     CardView cardView, cardView2;
 
+    // Statistics variables
+    List<String> dataList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_computer);
 
         // Variables
-
         chessboard = findViewById(R.id.chessboard);
         computerName = findViewById(R.id.computerName);
         playerName = findViewById(R.id.playerName);
@@ -75,6 +82,7 @@ public class ComputerActivity extends AppCompatActivity {
         cardView = findViewById(R.id.cardView);
         cardView2 = findViewById(R.id.cardView2);
         board = new Board();
+
 
         // Initialize
         setChessboardDimensions();
@@ -172,12 +180,67 @@ public class ComputerActivity extends AppCompatActivity {
                     String gameResult = "";
 
                     if (isCheckmate()) {
-                        gameResult = "Checkmate!";
+                        gameResult = "Checkmate";
                     } else if (isStalemate()) {
-                        gameResult = "Stalemate!";
+                        gameResult = "Stalemate";
                     } else if (isDraw()) {
-                        gameResult = "Draw!";
+                        gameResult = "Draw";
                     }
+
+                    // Statistics code
+                    FirebaseAuth auth = FirebaseAuth.getInstance();
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    StorageReference storageRef = storage.getReference();
+                    String userId = auth.getCurrentUser().getUid();
+                    String filename = userId + "_data.txt"; // Using the user's UID as the filename
+                    StorageReference fileRef = storageRef.child(filename);
+
+                    // Check if the file already exists
+                    String finalGameResult = gameResult;
+                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        // File exists, append data to the existing array
+                        fileRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(bytes -> {
+                            // Convert the existing data to a string
+                            String existingData = new String(bytes);
+
+                            // Parse the existing data into a list
+                            dataList = new ArrayList<>(Arrays.asList(existingData.split("\n")));
+                            dataList.add(finalGameResult + " + " + level);
+
+                            // Convert the updated data list back to a string
+                            String updatedData = TextUtils.join("\n", dataList);
+
+                            // Upload the updated data to Firebase Storage
+                            fileRef.putBytes(updatedData.getBytes()).addOnSuccessListener(taskSnapshot -> {
+                                // Data uploaded successfully
+                                Log.d("TAG", "Data uploaded successfully.");
+                            }).addOnFailureListener(e -> {
+                                // Handle any errors uploading the data
+                                Log.e("TAG", "Error uploading data: " + e.getMessage(), e);
+                            });
+                        }).addOnFailureListener(e -> {
+                            // Handle any errors reading the existing data
+                            Log.e("TAG", "Error reading existing data: " + e.getMessage(), e);
+                        });
+                    }).addOnFailureListener(e -> {
+                        // File doesn't exist, create a new one with the initial data
+                        List<String> dataList = new ArrayList<>();
+                        dataList.add(finalGameResult + " + " + level);
+                        dataList.add("Initial Data 2");
+
+                        // Convert the initial data list to a string
+                        String initialData = TextUtils.join("\n", dataList);
+
+                        // Upload the initial data to Firebase Storage
+                        fileRef.putBytes(initialData.getBytes()).addOnSuccessListener(taskSnapshot -> {
+                            // Data uploaded successfully
+                            Log.d("TAG", "Initial data uploaded successfully.");
+                        }).addOnFailureListener(e1 -> {
+                            // Handle any errors uploading the initial data
+                            Log.e("TAG", "Error uploading initial data: " + e1.getMessage(), e1);
+                        });
+                    });
+
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(ComputerActivity.this);
 
@@ -215,6 +278,7 @@ public class ComputerActivity extends AppCompatActivity {
                     }
                     // Add king to the dialog box
                     layout.addView(kingImage);
+
 
                     builder.setView(layout)
                             .setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
@@ -474,6 +538,59 @@ public class ComputerActivity extends AppCompatActivity {
                             } else if (isDraw()) {
                                 gameResult = "Draw!";
                             }
+
+
+                            /// Statistics code
+                            FirebaseAuth auth = FirebaseAuth.getInstance();
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference();
+                            String userId = auth.getCurrentUser().getUid();
+                            String filename = userId + "_data.txt"; // Using the user's UID as the filename
+                            StorageReference fileRef = storageRef.child(filename);
+                            String finalGameResult = gameResult;
+                            fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                // File exists, append data to the existing array
+                                fileRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(bytes -> {
+                                    // Convert the existing data to a string
+                                    String existingData = new String(bytes);
+
+                                    // Parse the existing data into a list
+                                    dataList = new ArrayList<>(Arrays.asList(existingData.split("\n")));
+                                    dataList.add("New Data 1");
+                                    dataList.add("New Data 2");
+
+                                    // Convert the updated data list back to a string
+                                    String updatedData = TextUtils.join("\n", dataList);
+
+                                    // Upload the updated data to Firebase Storage
+                                    fileRef.putBytes(updatedData.getBytes()).addOnSuccessListener(taskSnapshot -> {
+                                        // Data uploaded successfully
+                                        Log.d("TAG", "Data uploaded successfully.");
+                                    }).addOnFailureListener(e -> {
+                                        // Handle any errors uploading the data
+                                        Log.e("TAG", "Error uploading data: " + e.getMessage(), e);
+                                    });
+                                }).addOnFailureListener(e -> {
+                                    // Handle any errors reading the existing data
+                                    Log.e("TAG", "Error reading existing data: " + e.getMessage(), e);
+                                });
+                            }).addOnFailureListener(e -> {
+                                // File doesn't exist, create a new one with the initial data
+                                List<String> dataList = new ArrayList<>();
+                                dataList.add(finalGameResult + " + " + level);
+
+                                // Convert the initial data list to a string
+                                String initialData = TextUtils.join("\n", dataList);
+
+                                // Upload the initial data to Firebase Storage
+                                fileRef.putBytes(initialData.getBytes()).addOnSuccessListener(taskSnapshot -> {
+                                    // Data uploaded successfully
+                                    Log.d("TAG", "Initial data uploaded successfully.");
+                                }).addOnFailureListener(e1 -> {
+                                    // Handle any errors uploading the initial data
+                                    Log.e("TAG", "Error uploading initial data: " + e1.getMessage(), e1);
+                                });
+                            });
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(ComputerActivity.this);
 

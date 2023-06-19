@@ -25,13 +25,14 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+
 @SuppressLint("CustomSplashScreen")
 public class SplashScreenActivity extends AppCompatActivity {
 
 
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "GOOGLE_SIGN_IN_TAG";
-    TextView textView;
+    TextView byline;
     ProgressBar progressBar;
     int duration = 500;
     int incrementStep = 1;
@@ -48,7 +49,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
 
         // Variables
-        textView = findViewById(R.id.textView);
+        byline = findViewById(R.id.byline);
         progressBar = findViewById(R.id.progressBar);
         handler = new Handler();
 
@@ -59,8 +60,9 @@ public class SplashScreenActivity extends AppCompatActivity {
         // Make the activity full screen
         getWindow().getDecorView().setSystemUiVisibility(5894);
         handler.postDelayed(runnable, delay);
-        textView.setText("Chess\nBy: Vignesh");
-        textView.setGravity(1);
+        byline.setText("Chess\nBy: Vignesh");
+        byline.setGravity(1);
+        byline.setTextColor(Color.parseColor("#52ae7d"));
         getWindow().getDecorView().setBackgroundColor(0xFF00FF00);
 
 
