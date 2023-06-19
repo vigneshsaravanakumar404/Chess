@@ -48,9 +48,10 @@
         android:textSize="50sp"
         app:layout_constraintBottom_toTopOf="@+id/level"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/engineIcon"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        app:layout_constraintVertical_bias="0.721" />
 
     <Button
         android:id="@+id/play"
@@ -59,12 +60,13 @@
         android:text="Play"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.291"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/level"
-        app:layout_constraintVertical_bias="0.348" />
+        app:layout_constraintVertical_bias="0.352" />
 
     <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -91,4 +93,16 @@
             android:layout_height="wrap_content"
             android:text="Black" />
     </RadioGroup>
+
+    <Button
+        android:id="@+id/statistics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="statistics"
+        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.111"
+        app:layout_constraintStart_toEndOf="@+id/play"
+        app:layout_constraintTop_toBottomOf="@+id/level"
+        app:layout_constraintVertical_bias="0.609" />
 </androidx.constraintlayout.widget.ConstraintLayout>

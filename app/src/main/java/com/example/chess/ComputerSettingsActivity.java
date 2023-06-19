@@ -16,10 +16,9 @@ public class ComputerSettingsActivity extends AppCompatActivity {
     ImageView engineIcon;
     TextView name;
     int[] engineIcons;
-    Button play;
-    RadioButton white;
-    RadioButton black;
-    RadioButton random;
+    Button play, statistics;
+    RadioButton white, black, random;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +34,8 @@ public class ComputerSettingsActivity extends AppCompatActivity {
         white = findViewById(R.id.white);
         black = findViewById(R.id.black);
         random = findViewById(R.id.random);
+        statistics = findViewById(R.id.statistics);
+
 
         // Initialization
         getWindow().getDecorView().setSystemUiVisibility(5894);
@@ -86,6 +87,7 @@ public class ComputerSettingsActivity extends AppCompatActivity {
             ComputerActivity.isBlack = black.isChecked() || (!white.isChecked() && Math.random() < 0.5);
             startActivity(new Intent(this, ComputerActivity.class));
         });
+        statistics.setOnClickListener(v -> startActivity(new Intent(this, StatisticsActivity.class)));
     }
 
 }

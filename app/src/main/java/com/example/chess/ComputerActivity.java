@@ -205,7 +205,7 @@ public class ComputerActivity extends AppCompatActivity {
 
                             // Parse the existing data into a list
                             dataList = new ArrayList<>(Arrays.asList(existingData.split("\n")));
-                            dataList.add(finalGameResult + " + " + level);
+                            dataList.add("0 + " + finalGameResult + " + " + level);
 
                             // Convert the updated data list back to a string
                             String updatedData = TextUtils.join("\n", dataList);
@@ -225,7 +225,7 @@ public class ComputerActivity extends AppCompatActivity {
                     }).addOnFailureListener(e -> {
                         // File doesn't exist, create a new one with the initial data
                         List<String> dataList = new ArrayList<>();
-                        dataList.add(finalGameResult + " + " + level);
+                        dataList.add("0 + " + finalGameResult + " + " + level);
                         dataList.add("Initial Data 2");
 
                         // Convert the initial data list to a string
@@ -556,8 +556,7 @@ public class ComputerActivity extends AppCompatActivity {
 
                                     // Parse the existing data into a list
                                     dataList = new ArrayList<>(Arrays.asList(existingData.split("\n")));
-                                    dataList.add("New Data 1");
-                                    dataList.add("New Data 2");
+                                    dataList.add("0 + " + finalGameResult + " + " + level);
 
                                     // Convert the updated data list back to a string
                                     String updatedData = TextUtils.join("\n", dataList);
@@ -577,7 +576,7 @@ public class ComputerActivity extends AppCompatActivity {
                             }).addOnFailureListener(e -> {
                                 // File doesn't exist, create a new one with the initial data
                                 List<String> dataList = new ArrayList<>();
-                                dataList.add(finalGameResult + " + " + level);
+                                dataList.add("0 + " + finalGameResult + " + " + level);
 
                                 // Convert the initial data list to a string
                                 String initialData = TextUtils.join("\n", dataList);
